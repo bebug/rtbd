@@ -1,7 +1,12 @@
 package de.florianbuchner.trbd.entity;
 
+import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.math.Vector2;
+import de.florianbuchner.trbd.entity.component.DrawingComponent;
+import de.florianbuchner.trbd.entity.component.PositionComponent;
 
 public class EntityFactory {
 
@@ -13,7 +18,7 @@ public class EntityFactory {
         this.towerTexture = new Texture(Gdx.files.internal("tower.png"));
     }
 
-    public GameEntity createEntity(EntityType type) {
+    public Entity createEntity(EntityType type) {
         switch(type) {
             case FOUNDATION:
                 return this.createFoundation();
@@ -22,8 +27,11 @@ public class EntityFactory {
         return null;
     }
 
-    private GameEntity createFoundation() {
-        return new Foundation(this.foundationTexture);
+    private Entity createFoundation() {
+        Entity entity = new Entity();
+        entity.add(new PositionComponent(new Vector2(0, 0), new Vector2(0, 0)));
+        entity.add(new DrawingComponent(this.foundationTexture));
+        return entity;
     }
 
     public void dispose() {

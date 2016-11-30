@@ -1,26 +1,43 @@
 package de.florianbuchner.trbd.screen;
 
+import com.badlogic.ashley.core.Engine;
+import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import de.florianbuchner.trbd.Rtbd;
 import de.florianbuchner.trbd.entity.EntityFactory;
 import de.florianbuchner.trbd.entity.EntityType;
 import de.florianbuchner.trbd.entity.GameEntity;
+import de.florianbuchner.trbd.entity.system.DrawingSystem;
 
 public class GameScreen implements Screen {
 
-    private SpriteBatch batch;
+    private Rtbd rtbd;
     private EntityFactory entityFactory;
 
-    GameEntity foundation;
+    private Engine engine;
 
-    public GameScreen() {
-        batch = new SpriteBatch();
+    Entity foundation;
 
+    public GameScreen(Rtbd rtbd) {
+        this.rtbd = rtbd;
         this.entityFactory = new EntityFactory();
+        this.engine = new Engine();
 
         foundation = entityFactory.createEntity(EntityType.FOUNDATION);
+
+        this.createBaseEntities();
+        this.createBaseSystems();
+    }
+
+    private void createBaseEntities() {
+        this.engine.addEntity(foundation);
+    }
+
+    private void createBaseSystems() {
+        this.engine.addSystem(new DrawingSystem(this.rtbd.spriteBatch));
     }
 
     @Override
@@ -30,11 +47,7 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(1, 0, 0, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        batch.begin();
-        foundation.draw(batch);
-        batch.end();
+        this.engine.update(delta);
     }
 
     @Override
@@ -59,7 +72,6 @@ public class GameScreen implements Screen {
 
     @Override
     public void dispose() {
-        this.batch.dispose();
         this.entityFactory.dispose();
     }
 }
