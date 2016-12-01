@@ -10,8 +10,6 @@ import com.badlogic.gdx.utils.Array;
 import de.florianbuchner.trbd.entity.component.DrawingComponent;
 import de.florianbuchner.trbd.entity.component.PositionComponent;
 
-import java.util.Date;
-
 public class DrawingSystem extends IteratingSystem {
 
     private SpriteBatch spriteBatch;
@@ -29,8 +27,7 @@ public class DrawingSystem extends IteratingSystem {
 
         this.drawEntities = new Array<Entity>();
         this.spriteBatch = spriteBatch;
-        this.camera = new OrthographicCamera(100,100);
-        //this.camera.position.set(-150, -100, 0);
+        this.camera = new OrthographicCamera(500, 300);
     }
 
     @Override
@@ -45,7 +42,7 @@ public class DrawingSystem extends IteratingSystem {
         this.spriteBatch.begin();
         this.spriteBatch.setProjectionMatrix(this.camera.combined);
 
-        for (Entity entity: this.drawEntities) {
+        for (Entity entity : this.drawEntities) {
             DrawingComponent drawingComponent = this.drawingComponentComponentMapper.get(entity);
             PositionComponent positionComponent = this.positionComponentComponentMapper.get(entity);
             this.spriteBatch.draw(
@@ -63,7 +60,5 @@ public class DrawingSystem extends IteratingSystem {
 
         this.drawEntities.clear();
         this.spriteBatch.end();
-
-
     }
 }
