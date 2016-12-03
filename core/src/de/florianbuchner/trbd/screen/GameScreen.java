@@ -8,6 +8,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import de.florianbuchner.trbd.Rtbd;
+import de.florianbuchner.trbd.background.BackgroundComposer;
 import de.florianbuchner.trbd.entity.EntityFactory;
 import de.florianbuchner.trbd.entity.EntityType;
 import de.florianbuchner.trbd.entity.component.PositionComponent;
@@ -20,6 +21,7 @@ public class GameScreen implements Screen {
 
     private Rtbd rtbd;
     private EntityFactory entityFactory;
+    private BackgroundComposer backgroundComposer;
 
     private Engine engine;
     private Entity towerEntity;
@@ -30,6 +32,7 @@ public class GameScreen implements Screen {
         this.rtbd = rtbd;
         this.entityFactory = new EntityFactory();
         this.engine = new Engine();
+        this.backgroundComposer = new BackgroundComposer(20, 20);
 
         this.createBaseEntities();
         this.createBaseSystems();
@@ -40,6 +43,11 @@ public class GameScreen implements Screen {
     }
 
     private void createBaseEntities() {
+        // Add background entities
+        for(Entity entity : this.backgroundComposer.getEntities()) {
+            this.engine.addEntity(entity);
+        }
+
         this.engine.addEntity(entityFactory.createEntity(EntityType.FOUNDATION));
         this.towerEntity = entityFactory.createEntity(EntityType.TOWER);
         this.engine.addEntity(this.towerEntity);

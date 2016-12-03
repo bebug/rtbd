@@ -27,7 +27,7 @@ public class DrawingSystem extends IteratingSystem {
 
         this.drawEntities = new Array<Entity>();
         this.spriteBatch = spriteBatch;
-        this.camera = new OrthographicCamera(500, 300);
+        this.camera = new OrthographicCamera(400, 250);
     }
 
     @Override
