@@ -1,5 +1,6 @@
 package de.florianbuchner.trbd.background;
 
+import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
@@ -18,54 +19,66 @@ public class BackgroundComposer {
 
     private final int TILESIZE = 19;
 
-    Texture backgroundTexture;
+    private Texture backgroundTexture;
     private Entity[][] backgroundTile;
     private int length;
-    private int width;
+    private int height;
 
-    Map<TileCombination, TileTexture> textureRegionMap;
+    private Map<TileCombination, TileTexture> textureRegionMap;
 
-    public BackgroundComposer(int length, int width) {
-        this.width = width;
+    private ComponentMapper<BackgroundTypeComponent> backgroundTypeComponentComponentMapper;
+    private ComponentMapper<PositionComponent> positionComponentComponentMapper;
+    private ComponentMapper<DrawingComponent> drawingComponentComponentMapper;
+
+    public BackgroundComposer(int length, int height) {
+        this.height = height;
         this.length = length;
         this.backgroundTexture = new Texture(Gdx.files.internal("background.png"));
 
+        this.backgroundTypeComponentComponentMapper = ComponentMapper.getFor(BackgroundTypeComponent.class);
+        this.positionComponentComponentMapper = ComponentMapper.getFor(PositionComponent.class);
+        this.drawingComponentComponentMapper = ComponentMapper.getFor(DrawingComponent.class);
+
         this.initializeTextureMap();
         this.initializeBackground();
+
+        this.setTile(50,50, BackgroundTypeComponent.BackgroundType.SOIL);
     }
 
     private void initializeTextureMap() {
         this.textureRegionMap = new HashMap<TileCombination, TileTexture>();
 
+        // Create all possible ground combinations
+        // If one value on the edges will make no difference it is always filled with GRASS
         this.addWithRotation(
                 new TileCombination(
-                        BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.SOIL,
-                        BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.SOIL,
-                        BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.SOIL)
+                        BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS,
+                        BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.GRASS,
+                        BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS)
                 , new TextureRegion(this.backgroundTexture, 0, 0, 19, 19));
         this.addWithRotation(
                 new TileCombination(
+                        BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS,
                         BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS,
-                        BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS,
-                        BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS)
+                        BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS)
                 , new TextureRegion(this.backgroundTexture, 20, 0, 19, 19));
         this.addWithRotation(
                 new TileCombination(
-                        BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.SOIL,
+                        BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.GRASS,
                         BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.SOIL,
-                        BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.SOIL)
+                        BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.GRASS)
                 , new TextureRegion(this.backgroundTexture, 40, 0, 19, 19));
         this.addWithRotation(
                 new TileCombination(
+                        BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS,
                         BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.SOIL,
-                        BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.SOIL,
-                        BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.SOIL)
+                        BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS)
                 , new TextureRegion(this.backgroundTexture, 0, 20, 19, 19));
         this.addWithRotation(
                 new TileCombination(
-                        BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.SOIL,
+                        BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.GRASS,
                         BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.SOIL,
-                        BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.SOIL)
+                        BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS)
                 , new TextureRegion(this.backgroundTexture, 40, 20, 19, 19));
         this.addWithRotation(
                 new TileCombination(
@@ -81,15 +94,15 @@ public class BackgroundComposer {
                 , new TextureRegion(this.backgroundTexture, 80, 40, 19, 19));
         this.addWithRotation(
                 new TileCombination(
+                        BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS,
                         BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.SOIL,
-                        BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.SOIL,
-                        BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.SOIL)
+                        BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS)
                 , new TextureRegion(this.backgroundTexture, 60, 0, 19, 19));
         this.addWithRotation(
                 new TileCombination(
-                        BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.SOIL,
+                        BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS,
                         BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.SOIL,
-                        BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.SOIL)
+                        BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS)
                 , new TextureRegion(this.backgroundTexture, 80, 0, 19, 19));
         this.addWithRotation(
                 new TileCombination(
@@ -99,9 +112,9 @@ public class BackgroundComposer {
                 , new TextureRegion(this.backgroundTexture, 60, 20, 19, 19));
         this.addWithRotation(
                 new TileCombination(
-                        BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.SOIL,
+                        BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.GRASS,
                         BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.SOIL,
-                        BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.SOIL)
+                        BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS)
                 , new TextureRegion(this.backgroundTexture, 80, 20, 19, 19));
         this.addWithRotation(
                 new TileCombination(
@@ -117,9 +130,9 @@ public class BackgroundComposer {
                 , new TextureRegion(this.backgroundTexture, 40, 40, 19, 19));
         this.addWithRotation(
                 new TileCombination(
-                        BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.SOIL,
+                        BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS,
                         BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.SOIL,
-                        BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.SOIL)
+                        BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS)
                 , new TextureRegion(this.backgroundTexture, 60, 19, 19, -19));
     }
     
@@ -142,13 +155,13 @@ public class BackgroundComposer {
     }
 
     private void initializeBackground() {
-        this.backgroundTile = new Entity[this.length][this.width];
+        this.backgroundTile = new Entity[this.length][this.height];
 
         int startX = -this.length * TILESIZE / 2;
-        int startY = -this.width * TILESIZE / 2;
+        int startY = -this.height * TILESIZE / 2;
 
         for (int i = 0; i < this.length; i++) {
-            for (int j = 0; j < this.width; j++) {
+            for (int j = 0; j < this.height; j++) {
                 Entity entity = new Entity();
                 entity.add(new PositionComponent(new Vector2(startX + TILESIZE / 2 + i * TILESIZE, startY + TILESIZE / 2 + j * TILESIZE), new Vector2(1, 0)));
                 entity.add(new BackgroundTypeComponent(BackgroundTypeComponent.BackgroundType.GRASS));
@@ -167,7 +180,7 @@ public class BackgroundComposer {
     }
 
     public List<Entity> getEntities() {
-        List<Entity> entities = new ArrayList<Entity>(this.width * this.length);
+        List<Entity> entities = new ArrayList<Entity>(this.height * this.length);
 
         for(Entity[] entityList : this.backgroundTile) {
             for(Entity entity : entityList) {
@@ -178,13 +191,112 @@ public class BackgroundComposer {
         return entities;
     }
 
-    public int getXIndex(int positionX) {
+    public void setTile(float positionX, float positionY, BackgroundTypeComponent.BackgroundType type) {
+        if (positionX < -this.length * TILESIZE / 2 ||
+                positionY > this.length * TILESIZE / 2 ||
+                positionY < -this.height * TILESIZE / 2 ||
+                positionY > this.height * TILESIZE / 2) {
+            return;
+        }
+
+        int xIndex = this.getXIndex(positionX);
+        int yIndex = this.getYIndex(positionY);
+
+        this.backgroundTypeComponentComponentMapper.get(this.backgroundTile[xIndex][yIndex]).type = type;
+
+        for(int i = -1; i <= 1; i++){
+            for(int j = -1; j <= 1; j++){
+                this.reprocessTexture(xIndex + i, yIndex + j);
+            }
+        }
+    }
+
+    private void reprocessTexture(int xIndex, int yIndex) {
+        if (this.invalidIndex(xIndex, yIndex)) {
+            return;
+        }
+
+        TileCombination tileCombination = new TileCombination(
+                this.getBackgroundType(xIndex - 1, yIndex - 1),
+                this.getBackgroundType(xIndex, yIndex - 1),
+                this.getBackgroundType(xIndex + 1, yIndex - 1),
+                this.getBackgroundType(xIndex - 1, yIndex),
+                this.getBackgroundType(xIndex, yIndex),
+                this.getBackgroundType(xIndex + 1, yIndex),
+                this.getBackgroundType(xIndex - 1, yIndex + 1),
+                this.getBackgroundType(xIndex, yIndex + 1),
+                this.getBackgroundType(xIndex + 1, yIndex + 1)
+        );
+
+        // Because not important edges are filed with grass we will do it also for the hashmap access
+        if (tileCombination.b2 == BackgroundTypeComponent.BackgroundType.SOIL) {
+            tileCombination.a1 = BackgroundTypeComponent.BackgroundType.GRASS;
+            tileCombination.a2 = BackgroundTypeComponent.BackgroundType.GRASS;
+            tileCombination.a3 = BackgroundTypeComponent.BackgroundType.GRASS;
+            tileCombination.b1 = BackgroundTypeComponent.BackgroundType.GRASS;
+            tileCombination.b3 = BackgroundTypeComponent.BackgroundType.GRASS;
+            tileCombination.c1 = BackgroundTypeComponent.BackgroundType.GRASS;
+            tileCombination.c2 = BackgroundTypeComponent.BackgroundType.GRASS;
+            tileCombination.c3 = BackgroundTypeComponent.BackgroundType.GRASS;
+        } else {
+            if (tileCombination.a2 == BackgroundTypeComponent.BackgroundType.SOIL) {
+                tileCombination.a1 = BackgroundTypeComponent.BackgroundType.GRASS;
+                tileCombination.a3 = BackgroundTypeComponent.BackgroundType.GRASS;
+            }
+            if (tileCombination.b1 == BackgroundTypeComponent.BackgroundType.SOIL) {
+                tileCombination.a1 = BackgroundTypeComponent.BackgroundType.GRASS;
+                tileCombination.c1 = BackgroundTypeComponent.BackgroundType.GRASS;
+            }
+            if (tileCombination.b3 == BackgroundTypeComponent.BackgroundType.SOIL) {
+                tileCombination.a3 = BackgroundTypeComponent.BackgroundType.GRASS;
+                tileCombination.c3 = BackgroundTypeComponent.BackgroundType.GRASS;
+            }
+            if (tileCombination.c2 == BackgroundTypeComponent.BackgroundType.SOIL) {
+                tileCombination.c1 = BackgroundTypeComponent.BackgroundType.GRASS;
+                tileCombination.c3 = BackgroundTypeComponent.BackgroundType.GRASS;
+            }
+        }
+
+        TileTexture tileTexture = this.textureRegionMap.get(tileCombination);
+
+        this.positionComponentComponentMapper.get(this.backgroundTile[xIndex][yIndex]).facing = tileTexture.facing;
+        this.drawingComponentComponentMapper.get(this.backgroundTile[xIndex][yIndex]).textureRegion = tileTexture.textureRegion;
+    }
+
+    private BackgroundTypeComponent.BackgroundType getBackgroundType(int xIndex, int yIndex) {
+        if (this.invalidIndex(xIndex, yIndex)) {
+            return BackgroundTypeComponent.BackgroundType.GRASS;
+        }
+
+        return this.backgroundTypeComponentComponentMapper.get(this.backgroundTile[xIndex][yIndex]).type;
+    }
+
+    private boolean invalidIndex(int xIndex, int yIndex) {
+        return xIndex < 0 || xIndex > this.backgroundTile.length - 1 ||
+                yIndex < 0 || yIndex > this.backgroundTile[xIndex].length;
+    }
+
+    private int getXIndex(float positionX) {
         int startX = -this.length * TILESIZE / 2;
 
         if (positionX < startX) {
             return 0;
+        } else if (-positionX < startX) {
+            return TILESIZE - 1;
         } else {
-            return (positionX - startX) / TILESIZE;
+            return (int)((positionX - startX) / TILESIZE);
+        }
+    }
+
+    private int getYIndex(float positionY) {
+        int startY = -this.height * TILESIZE / 2;
+
+        if (positionY < startY) {
+            return 0;
+        } else if (-positionY < startY) {
+            return TILESIZE - 1;
+        } else {
+            return (int)((positionY - startY) / TILESIZE);
         }
     }
     
