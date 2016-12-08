@@ -32,7 +32,7 @@ public class GameScreen implements Screen {
         this.rtbd = rtbd;
         this.entityFactory = new EntityFactory();
         this.engine = new Engine();
-        this.backgroundComposer = new BackgroundComposer(20, 20);
+        this.backgroundComposer = new BackgroundComposer(23, 15);
 
         this.createBaseEntities();
         this.createBaseSystems();

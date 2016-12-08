@@ -14,7 +14,7 @@ public class DrawingComponent implements Component {
     }
 
     public DrawingComponent(TextureRegion textureRegion) {
-        this(textureRegion, new Vector2(-textureRegion.getRegionWidth() / 2, -textureRegion.getRegionHeight() / 2));
+        this(textureRegion, new Vector2(-textureRegion.getRegionWidth() / 2f, -textureRegion.getRegionHeight() / 2f));
     }
 
     public DrawingComponent(TextureRegion textureRegion, Vector2 textureOffset) {

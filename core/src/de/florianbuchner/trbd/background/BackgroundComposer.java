@@ -42,7 +42,12 @@ public class BackgroundComposer {
         this.initializeTextureMap();
         this.initializeBackground();
 
-        this.setTile(50,50, BackgroundTypeComponent.BackgroundType.SOIL);
+        this.setTile(20,20, BackgroundTypeComponent.BackgroundType.SOIL);
+        this.setTile(0,0, BackgroundTypeComponent.BackgroundType.SOIL);
+        this.setTile(-20,-20, BackgroundTypeComponent.BackgroundType.SOIL);
+        this.setTile(20,-20, BackgroundTypeComponent.BackgroundType.SOIL);
+        this.setTile(-20,20, BackgroundTypeComponent.BackgroundType.SOIL);
+
     }
 
     private void initializeTextureMap() {
@@ -130,6 +135,12 @@ public class BackgroundComposer {
                 , new TextureRegion(this.backgroundTexture, 40, 40, 19, 19));
         this.addWithRotation(
                 new TileCombination(
+                        BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.GRASS,
+                        BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.SOIL,
+                        BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS)
+                , new TextureRegion(this.backgroundTexture, 20, 40, 19, 19));
+        this.addWithRotation(
+                new TileCombination(
                         BackgroundTypeComponent.BackgroundType.SOIL, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS,
                         BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.SOIL,
                         BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS, BackgroundTypeComponent.BackgroundType.GRASS)
@@ -167,9 +178,7 @@ public class BackgroundComposer {
                 entity.add(new BackgroundTypeComponent(BackgroundTypeComponent.BackgroundType.GRASS));
                 // Add randomly flowers
                 double rnd = Math.random();
-                if (rnd < 0.05) {
-                    entity.add(new DrawingComponent(new TextureRegion(this.backgroundTexture, 20, 40, 19, 19)));
-                } else if (rnd < 0.1) {
+                if (rnd < 0.1) {
                     entity.add(new DrawingComponent(new TextureRegion(this.backgroundTexture, 20, 20, 19, 19)));
                 } else {
                     entity.add(new DrawingComponent(new TextureRegion(this.backgroundTexture, 80, 40, 19, 19)));
@@ -217,15 +226,15 @@ public class BackgroundComposer {
         }
 
         TileCombination tileCombination = new TileCombination(
-                this.getBackgroundType(xIndex - 1, yIndex - 1),
-                this.getBackgroundType(xIndex, yIndex - 1),
-                this.getBackgroundType(xIndex + 1, yIndex - 1),
+                this.getBackgroundType(xIndex - 1, yIndex + 1),
+                this.getBackgroundType(xIndex, yIndex + 1),
+                this.getBackgroundType(xIndex + 1, yIndex + 1),
                 this.getBackgroundType(xIndex - 1, yIndex),
                 this.getBackgroundType(xIndex, yIndex),
                 this.getBackgroundType(xIndex + 1, yIndex),
-                this.getBackgroundType(xIndex - 1, yIndex + 1),
-                this.getBackgroundType(xIndex, yIndex + 1),
-                this.getBackgroundType(xIndex + 1, yIndex + 1)
+                this.getBackgroundType(xIndex - 1, yIndex - 1),
+                this.getBackgroundType(xIndex, yIndex - 1),
+                this.getBackgroundType(xIndex + 1, yIndex - 1)
         );
 
         // Because not important edges are filed with grass we will do it also for the hashmap access
@@ -273,7 +282,7 @@ public class BackgroundComposer {
 
     private boolean invalidIndex(int xIndex, int yIndex) {
         return xIndex < 0 || xIndex > this.backgroundTile.length - 1 ||
-                yIndex < 0 || yIndex > this.backgroundTile[xIndex].length;
+                yIndex < 0 || yIndex > this.backgroundTile[xIndex].length - 1;
     }
 
     private int getXIndex(float positionX) {
