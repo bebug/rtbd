@@ -9,11 +9,13 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import de.florianbuchner.trbd.Rtbd;
 import de.florianbuchner.trbd.background.BackgroundComposer;
+import de.florianbuchner.trbd.core.GameEngine;
 import de.florianbuchner.trbd.entity.EntityFactory;
 import de.florianbuchner.trbd.entity.EntityType;
 import de.florianbuchner.trbd.entity.component.PositionComponent;
 import de.florianbuchner.trbd.entity.system.DrawingSystem;
 import de.florianbuchner.trbd.entity.system.TowerSystem;
+import de.florianbuchner.trbd.ui.WeaponHud;
 
 public class GameScreen implements Screen {
 
@@ -22,8 +24,10 @@ public class GameScreen implements Screen {
     private Rtbd rtbd;
     private EntityFactory entityFactory;
     private BackgroundComposer backgroundComposer;
+    private WeaponHud weaponHud;
+    private GameEngine gameEngine;
 
-    private Engine engine;
+    private Engine entityEngine;
     private Entity towerEntity;
 
     private ComponentMapper<PositionComponent> positionComponentComponentMapper;
@@ -31,13 +35,15 @@ public class GameScreen implements Screen {
     public GameScreen(Rtbd rtbd) {
         this.rtbd = rtbd;
         this.entityFactory = new EntityFactory();
-        this.engine = new Engine();
+        this.entityEngine = new Engine();
         this.backgroundComposer = new BackgroundComposer(23, 15);
+        this.gameEngine = new GameEngine(rtbd.getGameData());
 
         this.createBaseEntities();
         this.createBaseSystems();
 
         this.positionComponentComponentMapper = ComponentMapper.getFor(PositionComponent.class);
+        this.weaponHud = new WeaponHud(rtbd.getGameData());
 
         this.crosshairTexture = new Texture(Gdx.files.internal("crosshair.png"));
     }
@@ -45,23 +51,24 @@ public class GameScreen implements Screen {
     private void createBaseEntities() {
         // Add background entities
         for(Entity entity : this.backgroundComposer.getEntities()) {
-            this.engine.addEntity(entity);
+            this.entityEngine.addEntity(entity);
         }
 
-        this.engine.addEntity(entityFactory.createEntity(EntityType.FOUNDATION));
+        this.entityEngine.addEntity(entityFactory.createEntity(EntityType.FOUNDATION));
         this.towerEntity = entityFactory.createEntity(EntityType.TOWER);
-        this.engine.addEntity(this.towerEntity);
+        this.entityEngine.addEntity(this.towerEntity);
     }
 
     private void createBaseSystems() {
-        this.engine.addSystem(new DrawingSystem(this.rtbd.spriteBatch));
-        this.engine.addSystem(new TowerSystem());
+        this.entityEngine.addSystem(new DrawingSystem(this.rtbd.getGameData().spriteBatch));
+        this.entityEngine.addSystem(new TowerSystem());
     }
 
     private void drawGUI() {
-        this.rtbd.spriteBatch.begin();
+        this.rtbd.getGameData().spriteBatch.begin();
         this.drawCrosshair();
-        this.rtbd.spriteBatch.end();
+        this.weaponHud.drawHud();
+        this.rtbd.getGameData().spriteBatch.end();
     }
 
     private void drawCrosshair() {
@@ -69,7 +76,7 @@ public class GameScreen implements Screen {
         Vector2 crosshairPosition = new Vector2(100, 0);
         crosshairPosition.setAngle(positionComponent.facing.angle());
 
-        this.rtbd.spriteBatch.draw(this.crosshairTexture,
+        this.rtbd.getGameData().spriteBatch.draw(this.crosshairTexture,
                 crosshairPosition.x - this.crosshairTexture.getWidth() / 2,
                 crosshairPosition.y - this.crosshairTexture.getHeight() / 2);
     }
@@ -81,7 +88,8 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        this.engine.update(delta);
+        this.gameEngine.update(delta);
+        this.entityEngine.update(delta);
         this.drawGUI();
     }
 

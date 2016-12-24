@@ -178,8 +178,12 @@ public class BackgroundComposer {
                 entity.add(new BackgroundTypeComponent(BackgroundTypeComponent.BackgroundType.GRASS));
                 // Add randomly flowers
                 double rnd = Math.random();
-                if (rnd < 0.1) {
+                if (rnd < 0.03) {
                     entity.add(new DrawingComponent(new TextureRegion(this.backgroundTexture, 20, 20, 19, 19)));
+                } else if (rnd < 0.06) {
+                    entity.add(new DrawingComponent(new TextureRegion(this.backgroundTexture, 100, 0, 19, 19)));
+                } else if (rnd < 0.09) {
+                    entity.add(new DrawingComponent(new TextureRegion(this.backgroundTexture, 100, 20, 19, 19)));
                 } else {
                     entity.add(new DrawingComponent(new TextureRegion(this.backgroundTexture, 80, 40, 19, 19)));
                 }

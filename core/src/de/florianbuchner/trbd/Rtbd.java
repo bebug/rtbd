@@ -3,16 +3,25 @@ package de.florianbuchner.trbd;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import de.florianbuchner.trbd.core.GameData;
 import de.florianbuchner.trbd.screen.GameScreen;
 
 public class Rtbd extends Game {
 
-    public SpriteBatch spriteBatch;
+    private static int WIDTH = 400;
+
+    private static float RATIO = 1.7f;
+
+    private GameData gameData = new GameData();
 
     @Override
     public void create() {
-        this.spriteBatch = new SpriteBatch();
+        this.gameData.spriteBatch = new SpriteBatch();
+        this.gameData.width = WIDTH;
+        this.gameData.height = (int)(WIDTH / RATIO);
+        this.gameData.spriteBatch.setProjectionMatrix(new OrthographicCamera(this.gameData.width, this.gameData.height).combined);
 
         this.setScreen(new GameScreen(this));
     }
@@ -29,6 +38,10 @@ public class Rtbd extends Game {
     @Override
     public void dispose() {
         super.dispose();
-        this.spriteBatch.dispose();
+        this.gameData.spriteBatch.dispose();
+    }
+
+    public GameData getGameData() {
+        return gameData;
     }
 }

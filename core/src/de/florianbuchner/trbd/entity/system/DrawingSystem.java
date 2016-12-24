@@ -27,7 +27,6 @@ public class DrawingSystem extends IteratingSystem {
 
         this.drawEntities = new Array<Entity>();
         this.spriteBatch = spriteBatch;
-        this.camera = new OrthographicCamera(400, 250);
     }
 
     @Override
@@ -40,7 +39,6 @@ public class DrawingSystem extends IteratingSystem {
         super.update(deltaTime);
 
         this.spriteBatch.begin();
-        this.spriteBatch.setProjectionMatrix(this.camera.combined);
 
         for (Entity entity : this.drawEntities) {
             DrawingComponent drawingComponent = this.drawingComponentComponentMapper.get(entity);
