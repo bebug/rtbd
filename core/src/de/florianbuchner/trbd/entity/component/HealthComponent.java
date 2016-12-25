@@ -1,6 +1,8 @@
 package de.florianbuchner.trbd.entity.component;
 
-public class HealthComponent {
+import com.badlogic.ashley.core.Component;
+
+public class HealthComponent implements Component {
     public double health;
 
     public HealthComponent(double health) {

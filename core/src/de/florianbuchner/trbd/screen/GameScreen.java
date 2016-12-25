@@ -11,8 +11,8 @@ import de.florianbuchner.trbd.Rtbd;
 import de.florianbuchner.trbd.background.BackgroundComposer;
 import de.florianbuchner.trbd.core.GameEngine;
 import de.florianbuchner.trbd.entity.EntityFactory;
-import de.florianbuchner.trbd.entity.EntityType;
 import de.florianbuchner.trbd.entity.component.PositionComponent;
+import de.florianbuchner.trbd.entity.system.AnimationSystem;
 import de.florianbuchner.trbd.entity.system.DrawingSystem;
 import de.florianbuchner.trbd.entity.system.TowerSystem;
 import de.florianbuchner.trbd.ui.WeaponHud;
@@ -54,12 +54,15 @@ public class GameScreen implements Screen {
             this.entityEngine.addEntity(entity);
         }
 
-        this.entityEngine.addEntity(entityFactory.createEntity(EntityType.FOUNDATION));
-        this.towerEntity = entityFactory.createEntity(EntityType.TOWER);
+        this.entityEngine.addEntity(this.entityFactory.createExplosion(new Vector2(0,0)));
+
+        this.entityEngine.addEntity(entityFactory.createFoundation());
+        this.towerEntity = entityFactory.createTower();
         this.entityEngine.addEntity(this.towerEntity);
     }
 
     private void createBaseSystems() {
+        this.entityEngine.addSystem(new AnimationSystem());
         this.entityEngine.addSystem(new DrawingSystem(this.rtbd.getGameData().spriteBatch));
         this.entityEngine.addSystem(new TowerSystem());
     }
