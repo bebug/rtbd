@@ -10,6 +10,7 @@ public class PositionComponent implements Component {
 
     public enum PositionLayer{
         Background,
+        Ground,
         Enemy,
         Explosion,
         Foreground

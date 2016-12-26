@@ -55,6 +55,7 @@ public class DrawingSystem extends IteratingSystem {
 
         // Draw entities in order
         this.drawEntities(this.drawEntities.get(PositionComponent.PositionLayer.Background));
+        this.drawEntities(this.drawEntities.get(PositionComponent.PositionLayer.Ground));
         this.drawEntities(this.drawEntities.get(PositionComponent.PositionLayer.Enemy));
         this.drawEntities(this.drawEntities.get(PositionComponent.PositionLayer.Explosion));
         this.drawEntities(this.drawEntities.get(PositionComponent.PositionLayer.Foreground));

@@ -61,6 +61,18 @@ public class BackgroundComposer {
                 , new TextureRegion(this.backgroundTexture, 0, 0, 19, 19));
         this.addWithRotation(
                 new TileCombination(
+                        BackgroundEntity.BackgroundType.SOIL, BackgroundEntity.BackgroundType.GRASS, BackgroundEntity.BackgroundType.GRASS,
+                        BackgroundEntity.BackgroundType.GRASS, BackgroundEntity.BackgroundType.GRASS, BackgroundEntity.BackgroundType.GRASS,
+                        BackgroundEntity.BackgroundType.GRASS, BackgroundEntity.BackgroundType.GRASS, BackgroundEntity.BackgroundType.SOIL)
+                , new TextureRegion(this.backgroundTexture, 80, 40, 19, 19));
+        this.addWithRotation(
+                new TileCombination(
+                        BackgroundEntity.BackgroundType.GRASS, BackgroundEntity.BackgroundType.SOIL, BackgroundEntity.BackgroundType.GRASS,
+                        BackgroundEntity.BackgroundType.GRASS, BackgroundEntity.BackgroundType.GRASS, BackgroundEntity.BackgroundType.SOIL,
+                        BackgroundEntity.BackgroundType.SOIL, BackgroundEntity.BackgroundType.GRASS, BackgroundEntity.BackgroundType.GRASS)
+                , new TextureRegion(this.backgroundTexture, 120, 0, 19, 19));
+        this.addWithRotation(
+                new TileCombination(
                         BackgroundEntity.BackgroundType.GRASS, BackgroundEntity.BackgroundType.GRASS, BackgroundEntity.BackgroundType.GRASS,
                         BackgroundEntity.BackgroundType.SOIL, BackgroundEntity.BackgroundType.GRASS, BackgroundEntity.BackgroundType.GRASS,
                         BackgroundEntity.BackgroundType.GRASS, BackgroundEntity.BackgroundType.GRASS, BackgroundEntity.BackgroundType.GRASS)
