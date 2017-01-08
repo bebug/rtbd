@@ -12,12 +12,13 @@ public class LineMotionHandler implements MotionComponent.MotionHandler {
 
     private Vector2 startPosition;
 
-    private float accTime = 0F;
+    private float accTime;
 
     public LineMotionHandler(float speed, Vector2 facing, Vector2 startPosition) {
         this.speed = speed;
         this.facing = facing;
         this.startPosition = startPosition;
+        this.accTime = 0F;
     }
 
     @Override

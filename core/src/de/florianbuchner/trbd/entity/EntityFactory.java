@@ -106,14 +106,14 @@ public class EntityFactory {
         final Entity entity = new Entity();
         entity.add(new PositionComponent(startPosition, facing, PositionComponent.PositionLayer.Explosion));
         entity.add(new DrawingComponent(this.gunTextureRegion));
-        entity.add(new MotionComponent(new LineMotionHandler(25, facing, startPosition)));
+        entity.add(new MotionComponent(new LineMotionHandler(170F, facing, new Vector2(startPosition))));
         // Make sure entity is removed after screen is exited
         entity.add(new DelayComponent(new DelayComponent.DelayHandler() {
             @Override
             public void onDelay() {
                 engine.removeEntity(entity);
             }
-        }, 3F));
+        },3F));
         return entity;
     }
 
@@ -121,14 +121,14 @@ public class EntityFactory {
         final Entity entity = new Entity();
         entity.add(new PositionComponent(startPosition, facing, PositionComponent.PositionLayer.Explosion));
         entity.add(new DrawingComponent(this.bombTextureRegion));
-        entity.add(new MotionComponent(new LineMotionHandler(15, facing, startPosition)));
+        entity.add(new MotionComponent(new LineMotionHandler(100F, facing, new Vector2(startPosition))));
         // Make sure entity is removed after screen is exited
         entity.add(new DelayComponent(new DelayComponent.DelayHandler() {
             @Override
             public void onDelay() {
                 engine.removeEntity(entity);
             }
-        }, 5F));
+        }, 4F));
         return entity;
     }
 }
