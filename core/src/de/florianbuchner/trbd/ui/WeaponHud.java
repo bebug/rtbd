@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector3;
 import de.florianbuchner.trbd.core.GameData;
 import de.florianbuchner.trbd.core.WeaponType;
 
@@ -12,16 +13,30 @@ import java.util.Map;
 
 public class WeaponHud {
 
+    public interface WeaponHudHandler {
+        void weaponButtonClicked(WeaponType type);
+    }
+
     public static float BUTTON_SIZE = 70;
 
     private Map<WeaponType, WeaponButton> weaponButtons = new HashMap<WeaponType, WeaponButton>(WeaponType.values().length);
 
+    private Map<WeaponType, Rectangle> weaponBounds = new HashMap<WeaponType, Rectangle>(WeaponType.values().length);
+
     private GameData gameData;
 
-    public WeaponHud(final GameData gameData) {
+    private WeaponHudHandler weaponHudHandler;
+
+    public WeaponHud(GameData gameData, WeaponHudHandler weaponHudHandler) {
         this.gameData = gameData;
+        this.weaponHudHandler = weaponHudHandler;
 
         this.createWeaponButtons();
+
+        this.weaponBounds.put(WeaponType.Gun, new Rectangle(-this.gameData.width / 2F , -gameData.height / 2F, WeaponHud.BUTTON_SIZE, WeaponHud.BUTTON_SIZE));
+        this.weaponBounds.put(WeaponType.Laser, new Rectangle(this.gameData.width / 2F - WeaponHud.BUTTON_SIZE, -gameData.height / 2F, WeaponHud.BUTTON_SIZE, WeaponHud.BUTTON_SIZE));
+        this.weaponBounds.put(WeaponType.Blast, new Rectangle(-this.gameData.width / 2F , gameData.height / 2F - WeaponHud.BUTTON_SIZE, WeaponHud.BUTTON_SIZE, WeaponHud.BUTTON_SIZE));
+        this.weaponBounds.put(WeaponType.Bomb, new Rectangle(this.gameData.width / 2F - WeaponHud.BUTTON_SIZE, gameData.height / 2F - WeaponHud.BUTTON_SIZE, WeaponHud.BUTTON_SIZE, WeaponHud.BUTTON_SIZE));
     }
 
     private void createWeaponButtons() {
@@ -73,4 +88,15 @@ public class WeaponHud {
         }
     }
 
+    public void updateInput() {
+        if (Gdx.input.isTouched()) {
+            Vector3 projection =this.gameData.camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
+
+            for (WeaponType weaponType : WeaponType.values()) {
+                if (this.weaponBounds.get(weaponType).contains(projection.x, projection.y)) {
+                    this.weaponHudHandler.weaponButtonClicked(weaponType);
+                }
+            }
+        }
+    }
 }

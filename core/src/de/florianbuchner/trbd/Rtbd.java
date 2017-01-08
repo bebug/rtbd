@@ -21,7 +21,8 @@ public class Rtbd extends Game {
         this.gameData.spriteBatch = new SpriteBatch();
         this.gameData.width = WIDTH;
         this.gameData.height = (int)(WIDTH / RATIO);
-        this.gameData.spriteBatch.setProjectionMatrix(new OrthographicCamera(this.gameData.width, this.gameData.height).combined);
+        this.gameData.camera = new OrthographicCamera(this.gameData.width, this.gameData.height);
+        this.gameData.spriteBatch.setProjectionMatrix(this.gameData.camera.combined);
 
         this.setScreen(new GameScreen(this));
     }

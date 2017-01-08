@@ -4,17 +4,22 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 
 public class AnimationComponent extends DrawingComponent {
 
-    private final Animation animation;
+    private Animation animation;
 
-    private final boolean looping;
+    private boolean looping;
 
     private float duration;
 
+
     public AnimationComponent(Animation animation, boolean looping) {
+        this(animation, looping, 0F);
+    }
+
+    public AnimationComponent(Animation animation, boolean looping, float startTime) {
         super(animation.getKeyFrame(0f));
         this.animation = animation;
         this.looping = looping;
-        this.duration = 0f;
+        this.duration = startTime;
     }
 
     public void update(float delta) {

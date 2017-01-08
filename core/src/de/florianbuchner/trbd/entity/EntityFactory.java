@@ -11,10 +11,10 @@ import de.florianbuchner.trbd.background.BackgroundComposer;
 import de.florianbuchner.trbd.entity.component.AnimationComponent;
 import de.florianbuchner.trbd.entity.component.DelayComponent;
 import de.florianbuchner.trbd.entity.component.DrawingComponent;
+import de.florianbuchner.trbd.entity.component.MotionComponent;
 import de.florianbuchner.trbd.entity.component.PositionComponent;
 import de.florianbuchner.trbd.entity.component.TowerComponent;
 
-import javax.xml.soap.Text;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,11 +23,22 @@ public class EntityFactory {
     private Texture foundationTexture;
     private Texture towerTexture;
     private Texture explosionTexture;
+    private TextureRegion gunTextureRegion;
+    private TextureRegion bombTextureRegion;
+    private TextureRegion[] laserTextureRegions;
 
     public EntityFactory() {
         this.foundationTexture = new Texture(Gdx.files.internal("foundation.png"));
         this.towerTexture = new Texture(Gdx.files.internal("tower.png"));
         this.explosionTexture = new Texture(Gdx.files.internal("explosion.png"));
+        Texture bulletsTexture = new Texture(Gdx.files.internal("bullets.png"));
+
+        this.bombTextureRegion = new TextureRegion(bulletsTexture, 0, 3 , 13, 8);
+        this.gunTextureRegion = new TextureRegion(bulletsTexture, 14, 3, 9, 9);
+        this.laserTextureRegions = new TextureRegion[3];
+        this.laserTextureRegions[0] = new TextureRegion(bulletsTexture, 24, 0, 22, 15);
+        this.laserTextureRegions[1] = new TextureRegion(bulletsTexture, 0, 15, 22, 15);
+        this.laserTextureRegions[2] = new TextureRegion(bulletsTexture, 24, 15, 22, 15);
     }
 
     public Entity createExplosion(Vector2 position, final Engine engine) {
@@ -89,5 +100,35 @@ public class EntityFactory {
     public void dispose() {
         this.foundationTexture.dispose();
         this.towerTexture.dispose();
+    }
+
+    public Entity createGun(Vector2 startPosition, Vector2 facing, final Engine engine) {
+        final Entity entity = new Entity();
+        entity.add(new PositionComponent(startPosition, facing, PositionComponent.PositionLayer.Explosion));
+        entity.add(new DrawingComponent(this.gunTextureRegion));
+        entity.add(new MotionComponent(new LineMotionHandler(25, facing, startPosition)));
+        // Make sure entity is removed after screen is exited
+        entity.add(new DelayComponent(new DelayComponent.DelayHandler() {
+            @Override
+            public void onDelay() {
+                engine.removeEntity(entity);
+            }
+        }, 3F));
+        return entity;
+    }
+
+    public Entity createBomb(Vector2 startPosition, Vector2 facing, final Engine engine) {
+        final Entity entity = new Entity();
+        entity.add(new PositionComponent(startPosition, facing, PositionComponent.PositionLayer.Explosion));
+        entity.add(new DrawingComponent(this.bombTextureRegion));
+        entity.add(new MotionComponent(new LineMotionHandler(15, facing, startPosition)));
+        // Make sure entity is removed after screen is exited
+        entity.add(new DelayComponent(new DelayComponent.DelayHandler() {
+            @Override
+            public void onDelay() {
+                engine.removeEntity(entity);
+            }
+        }, 5F));
+        return entity;
     }
 }

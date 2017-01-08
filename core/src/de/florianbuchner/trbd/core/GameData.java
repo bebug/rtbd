@@ -1,5 +1,6 @@
 package de.florianbuchner.trbd.core;
 
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 import java.util.HashMap;
@@ -11,6 +12,8 @@ public class GameData {
     public int height;
 
     public SpriteBatch spriteBatch;
+
+    public Camera camera;
 
     public Map<WeaponType, WeaponEnergie> weaponEnergies = new HashMap<WeaponType, WeaponEnergie>(WeaponType.values().length);
 
