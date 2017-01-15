@@ -25,7 +25,7 @@ public class EntityFactory {
     private Texture explosionTexture;
     private TextureRegion gunTextureRegion;
     private TextureRegion bombTextureRegion;
-    private TextureRegion[] laserTextureRegions;
+    private Animation laserAnimation;
 
     public EntityFactory() {
         this.foundationTexture = new Texture(Gdx.files.internal("foundation.png"));
@@ -35,10 +35,11 @@ public class EntityFactory {
 
         this.bombTextureRegion = new TextureRegion(bulletsTexture, 0, 3 , 13, 8);
         this.gunTextureRegion = new TextureRegion(bulletsTexture, 14, 3, 9, 9);
-        this.laserTextureRegions = new TextureRegion[3];
-        this.laserTextureRegions[0] = new TextureRegion(bulletsTexture, 24, 0, 22, 15);
-        this.laserTextureRegions[1] = new TextureRegion(bulletsTexture, 0, 15, 22, 15);
-        this.laserTextureRegions[2] = new TextureRegion(bulletsTexture, 24, 15, 22, 15);
+        this.laserAnimation = new Animation(0.1F,
+                new TextureRegion(bulletsTexture, 24, 0, 22, 15),
+                new TextureRegion(bulletsTexture, 0, 15, 22, 15),
+                new TextureRegion(bulletsTexture, 24, 15, 22, 15));
+        this.laserAnimation.setPlayMode(Animation.PlayMode.LOOP);
     }
 
     public Entity createExplosion(Vector2 position, final Engine engine) {
@@ -115,6 +116,28 @@ public class EntityFactory {
             }
         },3F));
         return entity;
+    }
+
+    public List<Entity> createLaser(Vector2 centerPosition, Vector2 startFacing, final Engine engine, float distance) {
+        final List<Entity> entities = new ArrayList<Entity>();
+
+        for(int i = 0; i < 10; i++) {
+            final Entity entity = new Entity();
+            float centerDistance = distance + 8 + i * 22;
+            entity.add(new PositionComponent(new Vector2(centerPosition.x + centerDistance * startFacing.x,
+                    centerPosition.y + centerDistance * startFacing.y), startFacing, PositionComponent.PositionLayer.Explosion));
+            entity.add(new MotionComponent(new CircleMotionHandler(startFacing, centerPosition, centerDistance, -120F)));
+            entity.add(new AnimationComponent(this.laserAnimation, true, i % this.laserAnimation.getKeyFrames().length * this.laserAnimation.getFrameDuration()));
+            entity.add(new DelayComponent(new DelayComponent.DelayHandler() {
+                @Override
+                public void onDelay() {
+                    engine.removeEntity(entity);
+                }
+            },3F));
+            entities.add(entity);
+        }
+
+        return entities;
     }
 
     public Entity createBomb(Vector2 startPosition, Vector2 facing, final Engine engine) {

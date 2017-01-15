@@ -10,13 +10,12 @@ public class AnimationComponent extends DrawingComponent {
 
     private float duration;
 
-
     public AnimationComponent(Animation animation, boolean looping) {
         this(animation, looping, 0F);
     }
 
     public AnimationComponent(Animation animation, boolean looping, float startTime) {
-        super(animation.getKeyFrame(0f));
+        super(animation.getKeyFrame(startTime));
         this.animation = animation;
         this.looping = looping;
         this.duration = startTime;

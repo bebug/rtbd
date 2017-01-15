@@ -9,7 +9,7 @@ import de.florianbuchner.trbd.entity.component.TowerComponent;
 
 public class TowerSystem extends IteratingSystem {
 
-    private float ROTATIONSPEED = -120;
+    private float ROTATIONSPEED = -120F;
 
     private ComponentMapper<PositionComponent> positionComponentComponentMapper;
 
