@@ -57,6 +57,13 @@ public class GameEngine {
                 this.entityEngine.addEntity(this.entityFactory.createBomb(this.createBulletStartPosition(shootFacing), new Vector2(shootFacing), this.entityEngine));
                 this.gameData.weaponEnergies.get(WeaponType.Bomb).reset();
                 break;
+            case Blast:
+                entities = this.entityFactory.createBlast(new Vector2(0, 0), this.entityEngine);
+                for (Entity entity : entities) {
+                    this.entityEngine.addEntity(entity);
+                }
+                this.gameData.weaponEnergies.get(WeaponType.Blast).reset();
+                break;
         }
     }
 

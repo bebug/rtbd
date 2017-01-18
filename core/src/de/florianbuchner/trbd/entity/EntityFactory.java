@@ -20,9 +20,12 @@ import java.util.List;
 
 public class EntityFactory {
 
+    private float ROTATIONSPEED = -120F;
+
     private Texture foundationTexture;
     private Texture towerTexture;
     private Texture explosionTexture;
+    private Texture crosshairTexture;
     private TextureRegion gunTextureRegion;
     private TextureRegion bombTextureRegion;
     private Animation laserAnimation;
@@ -31,6 +34,7 @@ public class EntityFactory {
         this.foundationTexture = new Texture(Gdx.files.internal("foundation.png"));
         this.towerTexture = new Texture(Gdx.files.internal("tower.png"));
         this.explosionTexture = new Texture(Gdx.files.internal("explosion.png"));
+        this.crosshairTexture = new Texture(Gdx.files.internal("crosshair.png"));
         Texture bulletsTexture = new Texture(Gdx.files.internal("bullets.png"));
 
         this.bombTextureRegion = new TextureRegion(bulletsTexture, 0, 3 , 13, 8);
@@ -58,23 +62,25 @@ public class EntityFactory {
         return entity;
     }
 
-    public List<Entity> createExplosions(final Vector2 position, final float range, int amount, float time, final Engine engine, final BackgroundComposer test) {
+    public Entity createExplosion(Vector2 position, final Engine engine, float time) {
+        final Entity explosion = this.createExplosion(position, engine);
+        final Entity insertEntity = new Entity();
+        insertEntity.add(new DelayComponent(new DelayComponent.DelayHandler() {
+            @Override
+            public void onDelay() {
+                engine.removeEntity(insertEntity);
+                engine.addEntity(explosion);
+            }
+        }, time));
+        return insertEntity;
+    }
+
+    public List<Entity> createExplosions(final Vector2 position, final float range, int amount, float time, final Engine engine) {
         List<Entity> entities = new ArrayList<Entity>(amount);
         for (int i = 0; i < amount; i++) {
             final Vector2 rndVector = this.getRandomVector(range);
-            final Entity explosion = this.createExplosion(new Vector2(position.x + rndVector.x - range / 2f,
-                    position.y + rndVector.y - range / 2f), engine);
-            final Entity insertEntity = new Entity();
-            insertEntity.add(new DelayComponent(new DelayComponent.DelayHandler() {
-                @Override
-                public void onDelay() {
-                    test.setTile(position.x + rndVector.x - range / 2f,
-                            position.y + rndVector.y - range / 2f, BackgroundEntity.BackgroundType.SOIL);
-                    engine.removeEntity(insertEntity);
-                    engine.addEntity(explosion);
-                }
-            }, (float)Math.random() * time));
-            entities.add(insertEntity);
+            entities.add(this.createExplosion(new Vector2(position.x + rndVector.x - range / 2f,
+                    position.y + rndVector.y - range / 2f), engine, (float)Math.random() * time));
         }
         return entities;
     }
@@ -88,6 +94,17 @@ public class EntityFactory {
         entity.add(new PositionComponent(new Vector2(0, 0), new Vector2(0, 1), PositionComponent.PositionLayer.Enemy));
         entity.add(new DrawingComponent(new TextureRegion(this.towerTexture), new Vector2(-this.towerTexture.getWidth() / 2 + 7, -(this.towerTexture.getHeight() / 2))));
         entity.add(new TowerComponent());
+        entity.add(new MotionComponent(new CircleMotionHandler(new Vector2(0, 1), new Vector2(0, 0), 0F, ROTATIONSPEED)));
+        return entity;
+    }
+
+    /**
+     * @param facing will not be set by reference
+     */
+    public Entity createCrossHair(Vector2 facing) {
+        Entity entity = new Entity();
+        entity.add(new DrawingComponent(new TextureRegion(this.crosshairTexture), new Vector2(80, -this.crosshairTexture.getHeight() / 2F)));
+        entity.add(new PositionComponent(new Vector2(0, 0), facing, PositionComponent.PositionLayer.Foreground));
         return entity;
     }
 
@@ -105,10 +122,9 @@ public class EntityFactory {
 
     public Entity createGun(Vector2 startPosition, Vector2 facing, final Engine engine) {
         final Entity entity = new Entity();
-        entity.add(new PositionComponent(startPosition, facing, PositionComponent.PositionLayer.Explosion));
+        entity.add(new PositionComponent(startPosition, facing.nor(), PositionComponent.PositionLayer.Explosion));
         entity.add(new DrawingComponent(this.gunTextureRegion));
         entity.add(new MotionComponent(new LineMotionHandler(170F, facing, new Vector2(startPosition))));
-        // Make sure entity is removed after screen is exited
         entity.add(new DelayComponent(new DelayComponent.DelayHandler() {
             @Override
             public void onDelay() {
@@ -125,7 +141,7 @@ public class EntityFactory {
             final Entity entity = new Entity();
             float centerDistance = distance + 8 + i * 22;
             entity.add(new PositionComponent(new Vector2(centerPosition.x + centerDistance * startFacing.x,
-                    centerPosition.y + centerDistance * startFacing.y), startFacing, PositionComponent.PositionLayer.Explosion));
+                    centerPosition.y + centerDistance * startFacing.y), startFacing.nor(), PositionComponent.PositionLayer.Explosion));
             entity.add(new MotionComponent(new CircleMotionHandler(startFacing, centerPosition, centerDistance, -120F)));
             entity.add(new AnimationComponent(this.laserAnimation, true, i % this.laserAnimation.getKeyFrames().length * this.laserAnimation.getFrameDuration()));
             entity.add(new DelayComponent(new DelayComponent.DelayHandler() {
@@ -142,10 +158,9 @@ public class EntityFactory {
 
     public Entity createBomb(Vector2 startPosition, Vector2 facing, final Engine engine) {
         final Entity entity = new Entity();
-        entity.add(new PositionComponent(startPosition, facing, PositionComponent.PositionLayer.Explosion));
+        entity.add(new PositionComponent(startPosition, facing.nor(), PositionComponent.PositionLayer.Explosion));
         entity.add(new DrawingComponent(this.bombTextureRegion));
         entity.add(new MotionComponent(new LineMotionHandler(100F, facing, new Vector2(startPosition))));
-        // Make sure entity is removed after screen is exited
         entity.add(new DelayComponent(new DelayComponent.DelayHandler() {
             @Override
             public void onDelay() {
@@ -153,5 +168,31 @@ public class EntityFactory {
             }
         }, 4F));
         return entity;
+    }
+
+    public List<Entity> createBlast(Vector2 centerPosition, final Engine engine) {
+        final List<Entity> entities = new ArrayList<Entity>();
+
+        entities.addAll(this.createBlastRing(centerPosition, engine, 0F, 40F, 0F));
+        entities.addAll(this.createBlastRing(centerPosition, engine, 0.3F, 60F, 10F));
+        entities.addAll(this.createBlastRing(centerPosition, engine, 0.6F, 80F, 0F));
+
+        return entities;
+    }
+
+    private List<Entity> createBlastRing(Vector2 centerPosition, final Engine engine, float startTime, float distance, float startDegree) {
+        final List<Entity> entities = new ArrayList<Entity>();
+
+        float degree = startDegree;
+        Vector2 degreeVector = new Vector2(1, 0);
+
+        while(degree < 360F) {
+            degreeVector.setAngle(degree);
+            entities.add(this.createExplosion(new Vector2(centerPosition.x + degreeVector.x * distance,
+                    centerPosition.y + degreeVector.y * distance), engine, startTime));
+            degree += 20F;
+        }
+
+        return entities;
     }
 }

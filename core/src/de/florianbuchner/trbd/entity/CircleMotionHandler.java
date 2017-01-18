@@ -27,7 +27,7 @@ public class CircleMotionHandler implements MotionComponent.MotionHandler {
     @Override
     public void update(PositionComponent positionComponent, float deltaTime) {
         this.accTime += this.speed * deltaTime;
-        positionComponent.facing = new Vector2(1, 0).setAngle(startAngle + this.accTime);
+        positionComponent.facing.setAngle(startAngle + this.accTime);
         positionComponent.position.set(this.centerPosition.x + positionComponent.facing.x * distance,
                 this.centerPosition.y + positionComponent.facing.y * distance);
     }
