@@ -8,15 +8,13 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import de.florianbuchner.trbd.background.BackgroundComposer;
-import de.florianbuchner.trbd.entity.component.AnimationComponent;
-import de.florianbuchner.trbd.entity.component.DelayComponent;
-import de.florianbuchner.trbd.entity.component.DrawingComponent;
-import de.florianbuchner.trbd.entity.component.MotionComponent;
-import de.florianbuchner.trbd.entity.component.PositionComponent;
-import de.florianbuchner.trbd.entity.component.TowerComponent;
+import de.florianbuchner.trbd.core.EnemyType;
+import de.florianbuchner.trbd.entity.component.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class EntityFactory {
 
@@ -29,6 +27,7 @@ public class EntityFactory {
     private TextureRegion gunTextureRegion;
     private TextureRegion bombTextureRegion;
     private Animation laserAnimation;
+    private Map<EnemyType, Animation> enemyAnimations = new HashMap<EnemyType, Animation>(EnemyType.values().length);
 
     public EntityFactory() {
         this.foundationTexture = new Texture(Gdx.files.internal("foundation.png"));
@@ -36,6 +35,7 @@ public class EntityFactory {
         this.explosionTexture = new Texture(Gdx.files.internal("explosion.png"));
         this.crosshairTexture = new Texture(Gdx.files.internal("crosshair.png"));
         Texture bulletsTexture = new Texture(Gdx.files.internal("bullets.png"));
+        Texture enemiesTexture = new Texture(Gdx.files.internal("enemies.png"));
 
         this.bombTextureRegion = new TextureRegion(bulletsTexture, 0, 3 , 13, 8);
         this.gunTextureRegion = new TextureRegion(bulletsTexture, 14, 3, 9, 9);
@@ -44,6 +44,15 @@ public class EntityFactory {
                 new TextureRegion(bulletsTexture, 0, 15, 22, 15),
                 new TextureRegion(bulletsTexture, 24, 15, 22, 15));
         this.laserAnimation.setPlayMode(Animation.PlayMode.LOOP);
+        enemyAnimations.put(EnemyType.BIG_FUCK, new Animation(0.1F,
+                new TextureRegion(enemiesTexture, 0, 0, 52, 23),
+                new TextureRegion(enemiesTexture, 52, 0, 52, 23)));
+        enemyAnimations.put(EnemyType.GREEN_SCUM, new Animation(0.1F,
+                new TextureRegion(enemiesTexture, 0, 32, 52, 23),
+                new TextureRegion(enemiesTexture, 52, 32, 52, 23)));
+        enemyAnimations.put(EnemyType.RED_DICK, new Animation(0.1F,
+                new TextureRegion(enemiesTexture, 0, 64, 52, 23),
+                new TextureRegion(enemiesTexture, 52, 64, 52, 23)));
     }
 
     public Entity createExplosion(Vector2 position, final Engine engine) {
@@ -99,7 +108,7 @@ public class EntityFactory {
     }
 
     /**
-     * @param facing will not be set by reference
+     * @param facing will be set by reference
      */
     public Entity createCrossHair(Vector2 facing) {
         Entity entity = new Entity();
@@ -194,5 +203,38 @@ public class EntityFactory {
         }
 
         return entities;
+    }
+
+    public Entity createBigFuck(Vector2 startPosition, Vector2 endPosition, float speed, float livepoints) {
+        return this.createLineMotionEnemy(startPosition, endPosition, speed, livepoints, EnemyType.BIG_FUCK);
+
+    }
+
+    public Entity createRedDick(Vector2 startPosition, Vector2 endPosition, float speed, float livepoints) {
+        return this.createLineMotionEnemy(startPosition, endPosition, speed, livepoints, EnemyType.RED_DICK);
+    }
+
+    private Entity createLineMotionEnemy(Vector2 startPosition, Vector2 endPosition, float speed, float livepoints, EnemyType enemyType) {
+        final Entity entity = new Entity();
+        final AnimationComponent animationComponent = new AnimationComponent(this.enemyAnimations.get(enemyType), true);
+        animationComponent.textureOffset = new Vector2(-35, -12);
+        entity.add(animationComponent);
+        entity.add(new MotionComponent(new LineMotionHandler(speed, endPosition.sub(startPosition).nor(), new Vector2(startPosition))));
+        entity.add(new PositionComponent(new Vector2(startPosition), new Vector2(0, 0), PositionComponent.PositionLayer.Enemy));
+        entity.add(new HealthComponent(livepoints));
+
+        return entity;
+    }
+
+    public Entity createGreenScum(Vector2 startPosition, Vector2 endPosition, float speed, float livepoints) {
+        final Entity entity = new Entity();
+        final AnimationComponent animationComponent = new AnimationComponent(this.enemyAnimations.get(EnemyType.GREEN_SCUM), true);
+        animationComponent.textureOffset = new Vector2(-35, -12);
+        entity.add(animationComponent);
+        entity.add(new MotionComponent(new SineMotionHandler(speed, endPosition.sub(startPosition).nor(), new Vector2(startPosition))));
+        entity.add(new PositionComponent(new Vector2(startPosition), new Vector2(0, 0), PositionComponent.PositionLayer.Enemy));
+        entity.add(new HealthComponent(livepoints));
+
+        return entity;
     }
 }

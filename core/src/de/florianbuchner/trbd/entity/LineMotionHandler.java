@@ -26,5 +26,6 @@ public class LineMotionHandler implements MotionComponent.MotionHandler {
         this.accTime += deltaTime;
         positionComponent.position.set(this.startPosition.x + this.facing.x * this.accTime * this.speed,
                 this.startPosition.y + this.facing.y * this.accTime * this.speed);
+        positionComponent.facing.set(this.facing.x, this.facing.y);
     }
 }

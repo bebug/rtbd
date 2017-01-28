@@ -33,10 +33,10 @@ public class WeaponHud {
 
         this.createWeaponButtons();
 
-        this.weaponBounds.put(WeaponType.Gun, new Rectangle(-this.gameData.width / 2F , -gameData.height / 2F, WeaponHud.BUTTON_SIZE, WeaponHud.BUTTON_SIZE));
-        this.weaponBounds.put(WeaponType.Laser, new Rectangle(this.gameData.width / 2F - WeaponHud.BUTTON_SIZE, -gameData.height / 2F, WeaponHud.BUTTON_SIZE, WeaponHud.BUTTON_SIZE));
-        this.weaponBounds.put(WeaponType.Blast, new Rectangle(-this.gameData.width / 2F , gameData.height / 2F - WeaponHud.BUTTON_SIZE, WeaponHud.BUTTON_SIZE, WeaponHud.BUTTON_SIZE));
-        this.weaponBounds.put(WeaponType.Bomb, new Rectangle(this.gameData.width / 2F - WeaponHud.BUTTON_SIZE, gameData.height / 2F - WeaponHud.BUTTON_SIZE, WeaponHud.BUTTON_SIZE, WeaponHud.BUTTON_SIZE));
+        this.weaponBounds.put(WeaponType.GUN, new Rectangle(-this.gameData.width / 2F , -gameData.height / 2F, WeaponHud.BUTTON_SIZE, WeaponHud.BUTTON_SIZE));
+        this.weaponBounds.put(WeaponType.LASER, new Rectangle(this.gameData.width / 2F - WeaponHud.BUTTON_SIZE, -gameData.height / 2F, WeaponHud.BUTTON_SIZE, WeaponHud.BUTTON_SIZE));
+        this.weaponBounds.put(WeaponType.BLAST, new Rectangle(-this.gameData.width / 2F , gameData.height / 2F - WeaponHud.BUTTON_SIZE, WeaponHud.BUTTON_SIZE, WeaponHud.BUTTON_SIZE));
+        this.weaponBounds.put(WeaponType.BOMB, new Rectangle(this.gameData.width / 2F - WeaponHud.BUTTON_SIZE, gameData.height / 2F - WeaponHud.BUTTON_SIZE, WeaponHud.BUTTON_SIZE, WeaponHud.BUTTON_SIZE));
     }
 
     private void createWeaponButtons() {
@@ -50,32 +50,32 @@ public class WeaponHud {
         weaponIconMap.put(WeaponButton.WeaponIcon.Ready, new TextureRegion(weaponIconsTexture, 0, 0, 31, 31));
         weaponIconMap.put(WeaponButton.WeaponIcon.Loading, new TextureRegion(weaponIconsTexture, 0, 32, 31, 31));
         weaponIconMap.put(WeaponButton.WeaponIcon.Empty, new TextureRegion(weaponIconsTexture, 0, 64, 31, 31));
-        this.weaponButtons.put(WeaponType.Blast, new WeaponButton(weaponIconMap, weaponContainerReady, weaponContainerLoading, this.getPosition(WeaponType.Blast)));
+        this.weaponButtons.put(WeaponType.BLAST, new WeaponButton(weaponIconMap, weaponContainerReady, weaponContainerLoading, this.getPosition(WeaponType.BLAST)));
 
         weaponIconMap = new HashMap<WeaponButton.WeaponIcon, TextureRegion>(WeaponButton.WeaponIcon.values().length);
         weaponIconMap.put(WeaponButton.WeaponIcon.Ready, new TextureRegion(weaponIconsTexture, 32, 0, 31, 31));
         weaponIconMap.put(WeaponButton.WeaponIcon.Loading, new TextureRegion(weaponIconsTexture, 32, 32, 31, 31));
         weaponIconMap.put(WeaponButton.WeaponIcon.Empty, new TextureRegion(weaponIconsTexture, 32, 64, 31, 31));
-        this.weaponButtons.put(WeaponType.Gun, new WeaponButton(weaponIconMap, weaponContainerReady, weaponContainerLoading, this.getPosition(WeaponType.Gun)));
+        this.weaponButtons.put(WeaponType.GUN, new WeaponButton(weaponIconMap, weaponContainerReady, weaponContainerLoading, this.getPosition(WeaponType.GUN)));
 
         weaponIconMap = new HashMap<WeaponButton.WeaponIcon, TextureRegion>(WeaponButton.WeaponIcon.values().length);
         weaponIconMap.put(WeaponButton.WeaponIcon.Ready, new TextureRegion(weaponIconsTexture, 64, 0, 31, 31));
         weaponIconMap.put(WeaponButton.WeaponIcon.Loading, new TextureRegion(weaponIconsTexture, 64, 32, 31, 31));
         weaponIconMap.put(WeaponButton.WeaponIcon.Empty, new TextureRegion(weaponIconsTexture, 64, 64, 31, 31));
-        this.weaponButtons.put(WeaponType.Bomb, new WeaponButton(weaponIconMap, weaponContainerReady, weaponContainerLoading, this.getPosition(WeaponType.Bomb)));
+        this.weaponButtons.put(WeaponType.BOMB, new WeaponButton(weaponIconMap, weaponContainerReady, weaponContainerLoading, this.getPosition(WeaponType.BOMB)));
 
         weaponIconMap = new HashMap<WeaponButton.WeaponIcon, TextureRegion>(WeaponButton.WeaponIcon.values().length);
         weaponIconMap.put(WeaponButton.WeaponIcon.Ready, new TextureRegion(weaponIconsTexture, 96, 0, 31, 31));
         weaponIconMap.put(WeaponButton.WeaponIcon.Loading, new TextureRegion(weaponIconsTexture, 96, 32, 31, 31));
         weaponIconMap.put(WeaponButton.WeaponIcon.Empty, new TextureRegion(weaponIconsTexture, 96, 64, 31, 31));
-        this.weaponButtons.put(WeaponType.Laser, new WeaponButton(weaponIconMap, weaponContainerReady, weaponContainerLoading, this.getPosition(WeaponType.Laser)));
+        this.weaponButtons.put(WeaponType.LASER, new WeaponButton(weaponIconMap, weaponContainerReady, weaponContainerLoading, this.getPosition(WeaponType.LASER)));
     }
 
     private Rectangle getPosition(final WeaponType weaponType) {
         return new Rectangle(
-                (weaponType == WeaponType.Gun || weaponType == WeaponType.Blast ?
+                (weaponType == WeaponType.GUN || weaponType == WeaponType.BLAST ?
                         0 - this.gameData.width / 2f : this.gameData.width / 2f - BUTTON_SIZE),
-                (weaponType == WeaponType.Gun || weaponType == WeaponType.Laser ?
+                (weaponType == WeaponType.GUN || weaponType == WeaponType.LASER ?
                         0 - this.gameData.height / 2f : this.gameData.height / 2f - BUTTON_SIZE),
                 BUTTON_SIZE, BUTTON_SIZE);
     }
