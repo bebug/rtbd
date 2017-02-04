@@ -6,9 +6,9 @@ import de.florianbuchner.trbd.entity.component.PositionComponent;
 
 public class SineMotionHandler implements MotionComponent.MotionHandler {
 
-    private static float FREQUENCY = 0.02F;
+    private static float FREQUENCY = 0.4F;
 
-    private static float AMPLITUDE = 70F;
+    private static float AMPLITUDE = 50F;
 
     private float speed;
 
@@ -31,7 +31,7 @@ public class SineMotionHandler implements MotionComponent.MotionHandler {
         float distance = this.accTime * this.speed;
         Vector2 tempPosition = new Vector2(distance, AMPLITUDE * (float) Math.sin(distance * FREQUENCY)).rotate(facing.angle()).add(this.startPosition);
         positionComponent.position.set(tempPosition.x, tempPosition.y);
-        Vector2 tempFacing = new Vector2(1, AMPLITUDE * FREQUENCY * (float)Math.cos(distance * FREQUENCY)).rotate(facing.angle()).nor();
+        Vector2 tempFacing = new Vector2(1, - AMPLITUDE * FREQUENCY * 0.06F * (float)Math.sin(distance * FREQUENCY)).rotate(facing.angle()).nor();
         positionComponent.facing.set(tempFacing.x, tempFacing.y);
     }
 }

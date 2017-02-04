@@ -6,6 +6,7 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.math.Vector2;
 import de.florianbuchner.trbd.background.BackgroundComposer;
 import de.florianbuchner.trbd.entity.EntityFactory;
+import de.florianbuchner.trbd.entity.component.AnimationComponent;
 import de.florianbuchner.trbd.entity.component.PositionComponent;
 import de.florianbuchner.trbd.entity.system.AnimationSystem;
 import de.florianbuchner.trbd.entity.system.DelaySystem;
@@ -24,6 +25,7 @@ public class GameEngine {
     private BackgroundComposer backgroundComposer;
 
     private ComponentMapper<PositionComponent> positionComponentComponentMapper;
+    private ComponentMapper<AnimationComponent> animationComponentComponentMapper;
 
 
     public GameEngine(GameData gameData, int length, int height) {
@@ -32,6 +34,7 @@ public class GameEngine {
         this.entityEngine = new Engine();
         this.backgroundComposer = new BackgroundComposer(length, height);
         this.positionComponentComponentMapper = ComponentMapper.getFor(PositionComponent.class);
+        this.animationComponentComponentMapper = ComponentMapper.getFor(AnimationComponent.class);
 
         this.createBaseEntities();
         this.createBaseSystems();
@@ -49,10 +52,12 @@ public class GameEngine {
         final Entity towerEntity = this.entityFactory.createTower();
         // Facing will be set by reference to gamedata
         this.gameData.towerFacing = this.positionComponentComponentMapper.get(towerEntity).facing;
+        this.gameData.towerAnimation = this.animationComponentComponentMapper.get(towerEntity);
         this.entityEngine.addEntity(towerEntity);
         this.entityEngine.addEntity(this.entityFactory.createCrossHair(this.gameData.towerFacing));
 
         this.entityEngine.addEntity(this.entityFactory.createGreenScum(new Vector2(100,100), new Vector2(0, 0), 5F, 1F));
+        this.entityEngine.addEntity(this.entityFactory.createBigFuck(new Vector2(-150, 100), new Vector2(0, 0), 5F, 1F));
     }
 
     private void createBaseSystems() {
@@ -90,6 +95,7 @@ public class GameEngine {
             case GUN:
                 this.entityEngine.addEntity(this.entityFactory.createGun(this.createBulletStartPosition(shootFacing), new Vector2(shootFacing), this.entityEngine));
                 this.gameData.weaponEnergies.get(WeaponType.GUN).reset();
+                this.gameData.towerAnimation.resetAnimation();
                 break;
             case LASER:
                 List<Entity> entities = this.entityFactory.createLaser(new Vector2(0, 0), new Vector2(shootFacing), this.entityEngine, TOWER_LENGTH);
@@ -101,6 +107,7 @@ public class GameEngine {
             case BOMB:
                 this.entityEngine.addEntity(this.entityFactory.createBomb(this.createBulletStartPosition(shootFacing), new Vector2(shootFacing), this.entityEngine));
                 this.gameData.weaponEnergies.get(WeaponType.BOMB).reset();
+                this.gameData.towerAnimation.resetAnimation();
                 break;
             case BLAST:
                 entities = this.entityFactory.createBlast(new Vector2(0, 0), this.entityEngine);
@@ -108,6 +115,7 @@ public class GameEngine {
                     this.entityEngine.addEntity(entity);
                 }
                 this.gameData.weaponEnergies.get(WeaponType.BLAST).reset();
+                this.gameData.towerAnimation.resetAnimation();
                 break;
         }
     }

@@ -2,6 +2,7 @@ package de.florianbuchner.trbd.ui;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
@@ -40,8 +41,9 @@ public class WeaponHud {
     }
 
     private void createWeaponButtons() {
-        final Texture weaponIconsTexture = new Texture(Gdx.files.internal("weapon-icons.png"));
-        final Texture weaponContainerTexture = new Texture(Gdx.files.internal("weapon-container.png"));
+        TextureAtlas textureAtlas = new TextureAtlas(Gdx.files.internal("pack.atlas"));
+        final TextureRegion weaponIconsTexture = textureAtlas.createSprite("weapon-icons");
+        final TextureRegion weaponContainerTexture = textureAtlas.createSprite("weapon-container");
 
         TextureRegion weaponContainerLoading = new TextureRegion(weaponContainerTexture, 0, 0, 37, 43);
         TextureRegion weaponContainerReady = new TextureRegion(weaponContainerTexture, 38, 0, 37, 43);

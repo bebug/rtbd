@@ -4,6 +4,7 @@ import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import de.florianbuchner.trbd.entity.BackgroundEntity;
@@ -19,7 +20,7 @@ public class BackgroundComposer {
 
     private final int TILESIZE = 19;
 
-    private Texture backgroundTexture;
+    private TextureRegion backgroundTexture;
     private BackgroundEntity[][] backgroundTile;
     private int length;
     private int height;
@@ -32,7 +33,7 @@ public class BackgroundComposer {
     public BackgroundComposer(int length, int height) {
         this.height = height;
         this.length = length;
-        this.backgroundTexture = new Texture(Gdx.files.internal("background.png"));
+        this.backgroundTexture = new TextureAtlas(Gdx.files.internal("pack.atlas")).createSprite("background");
 
         this.positionComponentComponentMapper = ComponentMapper.getFor(PositionComponent.class);
         this.drawingComponentComponentMapper = ComponentMapper.getFor(DrawingComponent.class);

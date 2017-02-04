@@ -5,6 +5,7 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import de.florianbuchner.trbd.background.BackgroundComposer;
@@ -20,22 +21,25 @@ public class EntityFactory {
 
     private float ROTATIONSPEED = -120F;
 
-    private Texture foundationTexture;
-    private Texture towerTexture;
-    private Texture explosionTexture;
-    private Texture crosshairTexture;
+    private TextureRegion foundationTexture;
+    private Animation towerAnimation;
+    private TextureRegion explosionTexture;
+    private TextureRegion crosshairTexture;
     private TextureRegion gunTextureRegion;
     private TextureRegion bombTextureRegion;
+    private TextureRegion[] explosionRegions;
     private Animation laserAnimation;
     private Map<EnemyType, Animation> enemyAnimations = new HashMap<EnemyType, Animation>(EnemyType.values().length);
 
     public EntityFactory() {
-        this.foundationTexture = new Texture(Gdx.files.internal("foundation.png"));
-        this.towerTexture = new Texture(Gdx.files.internal("tower.png"));
-        this.explosionTexture = new Texture(Gdx.files.internal("explosion.png"));
-        this.crosshairTexture = new Texture(Gdx.files.internal("crosshair.png"));
-        Texture bulletsTexture = new Texture(Gdx.files.internal("bullets.png"));
-        Texture enemiesTexture = new Texture(Gdx.files.internal("enemies.png"));
+        TextureAtlas textureAtlas = new TextureAtlas(Gdx.files.internal("pack.atlas"));
+        this.foundationTexture = textureAtlas.createSprite("foundation");
+
+        this.explosionTexture = textureAtlas.createSprite("explosion");
+        this.crosshairTexture = textureAtlas.createSprite("crosshair");
+        TextureRegion bulletsTexture = textureAtlas.createSprite("bullets");
+        TextureRegion enemiesTexture = textureAtlas.createSprite("enemies");
+        TextureRegion towerTexture = textureAtlas.createSprite("tower");
 
         this.bombTextureRegion = new TextureRegion(bulletsTexture, 0, 3 , 13, 8);
         this.gunTextureRegion = new TextureRegion(bulletsTexture, 14, 3, 9, 9);
@@ -48,19 +52,27 @@ public class EntityFactory {
                 new TextureRegion(enemiesTexture, 0, 0, 52, 23),
                 new TextureRegion(enemiesTexture, 52, 0, 52, 23)));
         enemyAnimations.put(EnemyType.GREEN_SCUM, new Animation(0.1F,
-                new TextureRegion(enemiesTexture, 0, 32, 52, 23),
-                new TextureRegion(enemiesTexture, 52, 32, 52, 23)));
+                new TextureRegion(enemiesTexture, 0, 32, 52, 29),
+                new TextureRegion(enemiesTexture, 52, 32, 52, 29)));
         enemyAnimations.put(EnemyType.RED_DICK, new Animation(0.1F,
                 new TextureRegion(enemiesTexture, 0, 64, 52, 23),
                 new TextureRegion(enemiesTexture, 52, 64, 52, 23)));
+
+        this.explosionRegions = new TextureRegion[6];
+        for (int i = 0; i < 6; i++) {
+            this.explosionRegions[i] = new TextureRegion(this.explosionTexture,  (this.explosionTexture.getRegionWidth() / 6) * i, 0, this.explosionTexture.getRegionWidth() / 6, this.explosionTexture.getRegionHeight());
+        }
+
+        this.towerAnimation = new Animation(0.1F,
+                new TextureRegion(towerTexture, towerTexture.getRegionWidth() / 2, 0, towerTexture.getRegionWidth() / 2, towerTexture.getRegionHeight()),
+                new TextureRegion(towerTexture, 0, 0, towerTexture.getRegionWidth() / 2, towerTexture.getRegionHeight()));
     }
 
     public Entity createExplosion(Vector2 position, final Engine engine) {
         final Entity entity = new Entity();
         entity.add(new PositionComponent(position, new Vector2(1, 0), PositionComponent.PositionLayer.Explosion));
 
-        TextureRegion[][] textureSplits = TextureRegion.split(this.explosionTexture, this.explosionTexture.getWidth() / 6, this.explosionTexture.getHeight());
-        entity.add(new AnimationComponent(new Animation(0.1f, textureSplits[0]), false));
+        entity.add(new AnimationComponent(new Animation(0.1f, explosionRegions), false));
         entity.add(new DelayComponent(new DelayComponent.DelayHandler() {
             @Override
             public void onDelay() {
@@ -101,7 +113,10 @@ public class EntityFactory {
     public Entity createTower() {
         Entity entity = new Entity();
         entity.add(new PositionComponent(new Vector2(0, 0), new Vector2(0, 1), PositionComponent.PositionLayer.Enemy));
-        entity.add(new DrawingComponent(new TextureRegion(this.towerTexture), new Vector2(-this.towerTexture.getWidth() / 2 + 7, -(this.towerTexture.getHeight() / 2))));
+        //entity.add(new DrawingComponent(this.towerTexture, new Vector2(-this.towerTexture.getRegionWidth() / 2 + 7, -(this.towerTexture.getRegionHeight() / 2))));
+        AnimationComponent animationComponent = new AnimationComponent(this.towerAnimation, false, 1F);
+        animationComponent.textureOffset.set(animationComponent.textureOffset.x + 6, animationComponent.textureOffset.y);
+        entity.add(animationComponent);
         entity.add(new TowerComponent());
         entity.add(new MotionComponent(new CircleMotionHandler(new Vector2(0, 1), new Vector2(0, 0), 0F, ROTATIONSPEED)));
         return entity;
@@ -112,7 +127,7 @@ public class EntityFactory {
      */
     public Entity createCrossHair(Vector2 facing) {
         Entity entity = new Entity();
-        entity.add(new DrawingComponent(new TextureRegion(this.crosshairTexture), new Vector2(80, -this.crosshairTexture.getHeight() / 2F)));
+        entity.add(new DrawingComponent(this.crosshairTexture, new Vector2(80, -this.crosshairTexture.getRegionHeight() / 2F)));
         entity.add(new PositionComponent(new Vector2(0, 0), facing, PositionComponent.PositionLayer.Foreground));
         return entity;
     }
@@ -125,8 +140,6 @@ public class EntityFactory {
     }
 
     public void dispose() {
-        this.foundationTexture.dispose();
-        this.towerTexture.dispose();
     }
 
     public Entity createGun(Vector2 startPosition, Vector2 facing, final Engine engine) {
@@ -229,7 +242,7 @@ public class EntityFactory {
     public Entity createGreenScum(Vector2 startPosition, Vector2 endPosition, float speed, float livepoints) {
         final Entity entity = new Entity();
         final AnimationComponent animationComponent = new AnimationComponent(this.enemyAnimations.get(EnemyType.GREEN_SCUM), true);
-        animationComponent.textureOffset = new Vector2(-35, -12);
+        animationComponent.textureOffset = new Vector2(-35, -15);
         entity.add(animationComponent);
         entity.add(new MotionComponent(new SineMotionHandler(speed, endPosition.sub(startPosition).nor(), new Vector2(startPosition))));
         entity.add(new PositionComponent(new Vector2(startPosition), new Vector2(0, 0), PositionComponent.PositionLayer.Enemy));

@@ -1,0 +1,83 @@
+
+pack.png
+size: 512,256
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+background
+  rotate: false
+  xy: 232, 177
+  size: 139, 59
+  orig: 139, 59
+  offset: 0, 0
+  index: -1
+bullets
+  rotate: false
+  xy: 2, 2
+  size: 46, 30
+  orig: 46, 30
+  offset: 0, 0
+  index: -1
+crosshair
+  rotate: false
+  xy: 208, 214
+  size: 14, 22
+  orig: 14, 22
+  offset: 0, 0
+  index: -1
+enemies
+  rotate: false
+  xy: 232, 81
+  size: 104, 94
+  orig: 104, 94
+  offset: 0, 0
+  index: -1
+explosion
+  rotate: false
+  xy: 2, 205
+  size: 204, 31
+  orig: 204, 31
+  offset: 0, 0
+  index: -1
+foundation
+  rotate: false
+  xy: 103, 50
+  size: 54, 56
+  orig: 54, 56
+  offset: 0, 0
+  index: -1
+menu
+  rotate: false
+  xy: 338, 42
+  size: 32, 133
+  orig: 32, 133
+  offset: 0, 0
+  index: -1
+powerups
+  rotate: false
+  xy: 2, 79
+  size: 99, 124
+  orig: 99, 124
+  offset: 0, 0
+  index: -1
+tower
+  rotate: false
+  xy: 373, 187
+  size: 106, 49
+  orig: 106, 49
+  offset: 0, 0
+  index: -1
+weapon-container
+  rotate: false
+  xy: 2, 34
+  size: 75, 43
+  orig: 75, 43
+  offset: 0, 0
+  index: -1
+weapon-icons
+  rotate: false
+  xy: 103, 108
+  size: 127, 95
+  orig: 127, 95
+  offset: 0, 0
+  index: -1
