@@ -13,7 +13,8 @@ public class PositionComponent implements Component {
         Ground,
         Enemy,
         Explosion,
-        Foreground
+        Foreground,
+        Text
     }
 
     public PositionComponent(Vector2 position, Vector2 facing, PositionLayer positionLayer) {

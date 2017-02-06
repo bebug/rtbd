@@ -46,6 +46,13 @@ foundation
   orig: 54, 56
   offset: 0, 0
   index: -1
+healthbar
+  rotate: false
+  xy: 373, 181
+  size: 64, 4
+  orig: 64, 4
+  offset: 0, 0
+  index: -1
 menu
   rotate: false
   xy: 338, 42

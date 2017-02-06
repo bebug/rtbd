@@ -20,6 +20,7 @@ public class GameEngine {
     private final static float TOWER_LENGTH = 35F;
 
     private GameData gameData;
+    private Resources resources;
     private Engine entityEngine;
     private EntityFactory entityFactory;
     private BackgroundComposer backgroundComposer;
@@ -28,11 +29,12 @@ public class GameEngine {
     private ComponentMapper<AnimationComponent> animationComponentComponentMapper;
 
 
-    public GameEngine(GameData gameData, int length, int height) {
+    public GameEngine(GameData gameData, Resources resources, int length, int height) {
         this.gameData = gameData;
-        this.entityFactory = new EntityFactory();
+        this.resources = resources;
+        this.entityFactory = new EntityFactory(resources);
         this.entityEngine = new Engine();
-        this.backgroundComposer = new BackgroundComposer(length, height);
+        this.backgroundComposer = new BackgroundComposer(length, height, resources);
         this.positionComponentComponentMapper = ComponentMapper.getFor(PositionComponent.class);
         this.animationComponentComponentMapper = ComponentMapper.getFor(AnimationComponent.class);
 
@@ -56,15 +58,15 @@ public class GameEngine {
         this.entityEngine.addEntity(towerEntity);
         this.entityEngine.addEntity(this.entityFactory.createCrossHair(this.gameData.towerFacing));
 
-        this.entityEngine.addEntity(this.entityFactory.createGreenScum(new Vector2(100,100), new Vector2(0, 0), 5F, 1F));
-        this.entityEngine.addEntity(this.entityFactory.createBigFuck(new Vector2(-150, 100), new Vector2(0, 0), 5F, 1F));
+        this.entityEngine.addEntity(this.entityFactory.createGreenScum(new Vector2(100,100), new Vector2(0, 0), 5F, 100L));
+        this.entityEngine.addEntity(this.entityFactory.createBigFuck(new Vector2(-150, 100), new Vector2(0, 0), 5F, 100L));
     }
 
     private void createBaseSystems() {
         this.entityEngine.addSystem(new DelaySystem());
         this.entityEngine.addSystem(new AnimationSystem());
-        this.entityEngine.addSystem(new DrawingSystem(this.gameData.spriteBatch));
         this.entityEngine.addSystem(new MotionSystem());
+        this.entityEngine.addSystem(new DrawingSystem(this.resources));
     }
 
 
@@ -122,9 +124,5 @@ public class GameEngine {
 
     private Vector2 createBulletStartPosition(Vector2 shootFacing) {
         return new Vector2(shootFacing.x * TOWER_LENGTH, shootFacing.y * TOWER_LENGTH);
-    }
-
-    public void dispose() {
-        this.entityFactory.dispose();
     }
 }

@@ -14,14 +14,14 @@ public class GameScreen implements Screen, WeaponHud.WeaponHudHandler {
 
     public GameScreen(Rtbd rtbd) {
         this.rtbd = rtbd;
-        this.gameEngine = new GameEngine(rtbd.getGameData(), 23, 15);
-        this.weaponHud = new WeaponHud(rtbd.getGameData(), this);
+        this.gameEngine = new GameEngine(rtbd.getGameData(), rtbd.getResources(), 23, 15);
+        this.weaponHud = new WeaponHud(rtbd.getGameData(), rtbd.getResources(), this);
     }
 
     private void drawGUI() {
-        this.rtbd.getGameData().spriteBatch.begin();
+        this.rtbd.getResources().spriteBatch.begin();
         this.weaponHud.drawHud();
-        this.rtbd.getGameData().spriteBatch.end();
+        this.rtbd.getResources().spriteBatch.end();
     }
 
     @Override
@@ -62,7 +62,7 @@ public class GameScreen implements Screen, WeaponHud.WeaponHudHandler {
 
     @Override
     public void dispose() {
-        this.gameEngine.dispose();
+
     }
 
     @Override

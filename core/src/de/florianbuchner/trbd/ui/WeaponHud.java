@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import de.florianbuchner.trbd.core.GameData;
+import de.florianbuchner.trbd.core.Resources;
 import de.florianbuchner.trbd.core.WeaponType;
 
 import java.util.HashMap;
@@ -26,11 +27,14 @@ public class WeaponHud {
 
     private GameData gameData;
 
+    private Resources resources;
+
     private WeaponHudHandler weaponHudHandler;
 
-    public WeaponHud(GameData gameData, WeaponHudHandler weaponHudHandler) {
+    public WeaponHud(GameData gameData, Resources resources, WeaponHudHandler weaponHudHandler) {
         this.gameData = gameData;
         this.weaponHudHandler = weaponHudHandler;
+        this.resources = resources;
 
         this.createWeaponButtons();
 
@@ -41,9 +45,8 @@ public class WeaponHud {
     }
 
     private void createWeaponButtons() {
-        TextureAtlas textureAtlas = new TextureAtlas(Gdx.files.internal("pack.atlas"));
-        final TextureRegion weaponIconsTexture = textureAtlas.createSprite("weapon-icons");
-        final TextureRegion weaponContainerTexture = textureAtlas.createSprite("weapon-container");
+        final TextureRegion weaponIconsTexture = this.resources.textureAtlas.createSprite("weapon-icons");
+        final TextureRegion weaponContainerTexture = this.resources.textureAtlas.createSprite("weapon-container");
 
         TextureRegion weaponContainerLoading = new TextureRegion(weaponContainerTexture, 0, 0, 37, 43);
         TextureRegion weaponContainerReady = new TextureRegion(weaponContainerTexture, 38, 0, 37, 43);
@@ -85,14 +88,14 @@ public class WeaponHud {
     public void drawHud() {
         for (Map.Entry<WeaponType, WeaponButton> weaponTypeWeaponButtonEntry : weaponButtons.entrySet()) {
             if (this.gameData.weaponEnergies.containsKey(weaponTypeWeaponButtonEntry.getKey())) {
-                weaponTypeWeaponButtonEntry.getValue().draw(this.gameData.spriteBatch, this.gameData.weaponEnergies.get(weaponTypeWeaponButtonEntry.getKey()).getEnergy());
+                weaponTypeWeaponButtonEntry.getValue().draw(this.resources.spriteBatch, this.gameData.weaponEnergies.get(weaponTypeWeaponButtonEntry.getKey()).getEnergy());
             }
         }
     }
 
     public void updateInput() {
         if (Gdx.input.isTouched()) {
-            Vector3 projection =this.gameData.camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
+            Vector3 projection =this.resources.camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
 
             for (WeaponType weaponType : WeaponType.values()) {
                 if (this.weaponBounds.get(weaponType).contains(projection.x, projection.y)) {

@@ -11,11 +11,8 @@ import java.util.Map;
 public class GameData {
 
     public int width;
+
     public int height;
-
-    public SpriteBatch spriteBatch;
-
-    public Camera camera;
 
     public Map<WeaponType, WeaponEnergie> weaponEnergies = new HashMap<WeaponType, WeaponEnergie>(WeaponType.values().length);
 

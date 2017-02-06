@@ -4,8 +4,12 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import de.florianbuchner.trbd.core.FontType;
 import de.florianbuchner.trbd.core.GameData;
+import de.florianbuchner.trbd.core.Resources;
 import de.florianbuchner.trbd.screen.GameScreen;
 
 public class Rtbd extends Game {
@@ -16,13 +20,20 @@ public class Rtbd extends Game {
 
     private GameData gameData = new GameData();
 
+    private Resources resources = new Resources();
+
     @Override
     public void create() {
-        this.gameData.spriteBatch = new SpriteBatch();
+        this.resources.spriteBatch = new SpriteBatch();
         this.gameData.width = WIDTH;
         this.gameData.height = (int)(WIDTH / RATIO);
-        this.gameData.camera = new OrthographicCamera(this.gameData.width, this.gameData.height);
-        this.gameData.spriteBatch.setProjectionMatrix(this.gameData.camera.combined);
+        this.resources.camera = new OrthographicCamera(this.gameData.width, this.gameData.height);
+        this.resources.spriteBatch.setProjectionMatrix(this.resources.camera.combined);
+        this.resources.textureAtlas = new TextureAtlas(Gdx.files.internal("pack.atlas"));
+
+        this.resources.fonts.put(FontType.NORMAL, new BitmapFont(Gdx.files.internal("font-white-export.fnt")));
+        this.resources.fonts.put(FontType.WARN, new BitmapFont(Gdx.files.internal("font-red-export.fnt")));
+        this.resources.fonts.put(FontType.INFO, new BitmapFont(Gdx.files.internal("font-yellow-export.fnt")));
 
         this.setScreen(new GameScreen(this));
     }
@@ -39,10 +50,15 @@ public class Rtbd extends Game {
     @Override
     public void dispose() {
         super.dispose();
-        this.gameData.spriteBatch.dispose();
+        this.resources.spriteBatch.dispose();
+        this.resources.textureAtlas.dispose();
     }
 
     public GameData getGameData() {
-        return gameData;
+        return this.gameData;
+    }
+
+    public Resources getResources() {
+        return this.resources;
     }
 }

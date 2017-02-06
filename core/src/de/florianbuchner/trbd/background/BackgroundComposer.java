@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
+import de.florianbuchner.trbd.core.Resources;
 import de.florianbuchner.trbd.entity.BackgroundEntity;
 import de.florianbuchner.trbd.entity.component.DrawingComponent;
 import de.florianbuchner.trbd.entity.component.PositionComponent;
@@ -30,10 +31,10 @@ public class BackgroundComposer {
     private ComponentMapper<PositionComponent> positionComponentComponentMapper;
     private ComponentMapper<DrawingComponent> drawingComponentComponentMapper;
 
-    public BackgroundComposer(int length, int height) {
+    public BackgroundComposer(int length, int height, Resources resources) {
         this.height = height;
         this.length = length;
-        this.backgroundTexture = new TextureAtlas(Gdx.files.internal("pack.atlas")).createSprite("background");
+        this.backgroundTexture = resources.textureAtlas.createSprite("background");
 
         this.positionComponentComponentMapper = ComponentMapper.getFor(PositionComponent.class);
         this.drawingComponentComponentMapper = ComponentMapper.getFor(DrawingComponent.class);
