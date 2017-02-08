@@ -8,27 +8,28 @@ public class CircleMotionHandler implements MotionComponent.MotionHandler {
 
     private float speed;
 
-    private float startAngle;
-
     private Vector2 centerPosition;
 
     private float distance;
 
-    private float accTime;
-
-    public CircleMotionHandler(Vector2 startFacing, Vector2 centerPosition, float distance, float speed) {
-        this.startAngle = startFacing.angle();
+    public CircleMotionHandler(Vector2 centerPosition, float distance, float speed) {
         this.centerPosition = centerPosition;
         this.distance = distance;
         this.speed = speed;
-        this.accTime = 0F;
     }
 
     @Override
     public void update(PositionComponent positionComponent, float deltaTime) {
-        this.accTime += this.speed * deltaTime;
-        positionComponent.facing.setAngle(startAngle + this.accTime);
+        positionComponent.facing.setAngle(positionComponent.facing.angle() + deltaTime * this.speed);
         positionComponent.position.set(this.centerPosition.x + positionComponent.facing.x * distance,
                 this.centerPosition.y + positionComponent.facing.y * distance);
+    }
+
+    public float getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(float speed) {
+        this.speed = speed;
     }
 }

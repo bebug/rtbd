@@ -10,10 +10,8 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
 import de.florianbuchner.trbd.core.FontType;
 import de.florianbuchner.trbd.core.Resources;
-import de.florianbuchner.trbd.entity.component.AnimationComponent;
-import de.florianbuchner.trbd.entity.component.DrawingComponent;
-import de.florianbuchner.trbd.entity.component.HealthComponent;
-import de.florianbuchner.trbd.entity.component.PositionComponent;
+import de.florianbuchner.trbd.entity.component.*;
+import org.w3c.dom.Text;
 
 import java.util.*;
 
@@ -27,17 +25,19 @@ public class DrawingSystem extends IteratingSystem {
     private Resources resources;
     private Map<PositionComponent.PositionLayer, List<Entity>> drawEntities;
     private List<HealthDrawingContainer> healthEntities;
+    private List<Entity> textEntities;
 
     private ComponentMapper<DrawingComponent> drawingComponentComponentMapper;
     private ComponentMapper<PositionComponent> positionComponentComponentMapper;
     private ComponentMapper<AnimationComponent> animationComponentComponentMapper;
     private ComponentMapper<HealthComponent> healthComponentComponentMapper;
+    private ComponentMapper<TextComponent> textComponentComponentMapper;
 
     private TextureRegion healthbarEmpty;
     private TextureRegion healthbar;
 
     public DrawingSystem(Resources resources) {
-        super(Family.all(PositionComponent.class).one(AnimationComponent.class, DrawingComponent.class).get());
+        super(Family.all(PositionComponent.class).one(AnimationComponent.class, DrawingComponent.class, TextComponent.class).get());
 
         this.resources = resources;
 
@@ -49,12 +49,14 @@ public class DrawingSystem extends IteratingSystem {
         this.positionComponentComponentMapper = ComponentMapper.getFor(PositionComponent.class);
         this.animationComponentComponentMapper = ComponentMapper.getFor(AnimationComponent.class);
         this.healthComponentComponentMapper = ComponentMapper.getFor(HealthComponent.class);
+        this.textComponentComponentMapper = ComponentMapper.getFor(TextComponent.class);
 
         this.drawEntities = new HashMap<PositionComponent.PositionLayer, List<Entity>>(PositionComponent.PositionLayer.values().length);
         for (PositionComponent.PositionLayer positionLayer : PositionComponent.PositionLayer.values()) {
             this.drawEntities.put(positionLayer, new LinkedList<Entity>());
         }
 
+        this.textEntities = new LinkedList<Entity>();
         this.healthEntities = new LinkedList<HealthDrawingContainer>();
     }
 
@@ -62,19 +64,31 @@ public class DrawingSystem extends IteratingSystem {
     protected void processEntity(Entity entity, float deltaTime) {
         PositionComponent positionComponent = this.positionComponentComponentMapper.get(entity);
         if (positionComponent != null) {
-            this.drawEntities.get(positionComponent.positionLayer).add(entity);
-            HealthComponent healthComponent = this.healthComponentComponentMapper.get(entity);
-            if (healthComponent != null) {
-                HealthDrawingContainer healthDrawingContainer = new HealthDrawingContainer();
-                healthDrawingContainer.healthComponent = healthComponent;
-                healthDrawingContainer.positionComponent = positionComponent;
-                this.healthEntities.add(healthDrawingContainer);
+            TextComponent textComponent = this.textComponentComponentMapper.get(entity);
+            if (textComponent != null) {
+                this.textEntities.add(entity);
+            }
+            else {
+                this.drawEntities.get(positionComponent.positionLayer).add(entity);
+                HealthComponent healthComponent = this.healthComponentComponentMapper.get(entity);
+                if (healthComponent != null) {
+                    HealthDrawingContainer healthDrawingContainer = new HealthDrawingContainer();
+                    healthDrawingContainer.healthComponent = healthComponent;
+                    healthDrawingContainer.positionComponent = positionComponent;
+                    this.healthEntities.add(healthDrawingContainer);
+                }
             }
         }
     }
 
     @Override
     public void update(float deltaTime) {
+        this.healthEntities.clear();
+        this.textEntities.clear();
+        for (PositionComponent.PositionLayer positionLayer : PositionComponent.PositionLayer.values()) {
+            this.drawEntities.get(positionLayer).clear();
+        }
+
         super.update(deltaTime);
 
         this.resources.spriteBatch.begin();
@@ -88,21 +102,17 @@ public class DrawingSystem extends IteratingSystem {
         this.drawEntities(this.drawEntities.get(PositionComponent.PositionLayer.Foreground));
 
         this.drawHealthEntities(this.healthEntities);
-
-        for (PositionComponent.PositionLayer positionLayer : PositionComponent.PositionLayer.values()) {
-            this.drawEntities.get(positionLayer).clear();
-        }
-        this.healthEntities.clear();
-
-        this.resources.fonts.get(FontType.WARN).draw(this.resources.spriteBatch, "TEST 123", 100, 100);
-        this.resources.fonts.get(FontType.INFO).draw(this.resources.spriteBatch, "TEST 123", -100, 100);
-        this.resources.fonts.get(FontType.NORMAL).draw(this.resources.spriteBatch, "TEST 123 13565 7 BITCH", -100, -100);
+        this.drawText(this.textEntities);
 
         this.resources.spriteBatch.end();
     }
 
     private void drawText(List<Entity> entityList) {
-
+        for (Entity entity : entityList) {
+            TextComponent textComponent = this.textComponentComponentMapper.get(entity);
+            PositionComponent positionComponent = this.positionComponentComponentMapper.get(entity);
+            this.resources.fonts.get(textComponent.fontType).draw(this.resources.spriteBatch, textComponent.text, positionComponent.position.x, positionComponent.position.y);
+        }
     }
 
     private void drawEntities(List<Entity> entityList) {

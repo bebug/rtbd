@@ -5,13 +5,10 @@ import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.math.Vector2;
 import de.florianbuchner.trbd.background.BackgroundComposer;
+import de.florianbuchner.trbd.entity.CircleMotionHandler;
 import de.florianbuchner.trbd.entity.EntityFactory;
-import de.florianbuchner.trbd.entity.component.AnimationComponent;
-import de.florianbuchner.trbd.entity.component.PositionComponent;
-import de.florianbuchner.trbd.entity.system.AnimationSystem;
-import de.florianbuchner.trbd.entity.system.DelaySystem;
-import de.florianbuchner.trbd.entity.system.DrawingSystem;
-import de.florianbuchner.trbd.entity.system.MotionSystem;
+import de.florianbuchner.trbd.entity.component.*;
+import de.florianbuchner.trbd.entity.system.*;
 
 import java.util.List;
 
@@ -27,6 +24,9 @@ public class GameEngine {
 
     private ComponentMapper<PositionComponent> positionComponentComponentMapper;
     private ComponentMapper<AnimationComponent> animationComponentComponentMapper;
+    private ComponentMapper<DamageComponent> damageComponentComponentMapper;
+    private ComponentMapper<HealthComponent> healthComponentComponentMapper;
+    private ComponentMapper<MotionComponent> motionComponentComponentMapper;
 
 
     public GameEngine(GameData gameData, Resources resources, int length, int height) {
@@ -37,6 +37,9 @@ public class GameEngine {
         this.backgroundComposer = new BackgroundComposer(length, height, resources);
         this.positionComponentComponentMapper = ComponentMapper.getFor(PositionComponent.class);
         this.animationComponentComponentMapper = ComponentMapper.getFor(AnimationComponent.class);
+        this.damageComponentComponentMapper = ComponentMapper.getFor(DamageComponent.class);
+        this.healthComponentComponentMapper = ComponentMapper.getFor(HealthComponent.class);
+        this.motionComponentComponentMapper = ComponentMapper.getFor(MotionComponent.class);
 
         this.createBaseEntities();
         this.createBaseSystems();
@@ -52,11 +55,15 @@ public class GameEngine {
 
         this.entityEngine.addEntity(this.entityFactory.createFoundation());
         final Entity towerEntity = this.entityFactory.createTower();
-        // Facing will be set by reference to gamedata
-        this.gameData.towerFacing = this.positionComponentComponentMapper.get(towerEntity).facing;
+        // Data will be set by reference to gamedata
+        this.gameData.towerPosition = this.positionComponentComponentMapper.get(towerEntity);
         this.gameData.towerAnimation = this.animationComponentComponentMapper.get(towerEntity);
+        MotionComponent towerMotionComponent = this.motionComponentComponentMapper.get(towerEntity);
+        if (towerMotionComponent.handler instanceof CircleMotionHandler) {
+            this.gameData.towerMotionHandler = (CircleMotionHandler)towerMotionComponent.handler;
+        }
         this.entityEngine.addEntity(towerEntity);
-        this.entityEngine.addEntity(this.entityFactory.createCrossHair(this.gameData.towerFacing));
+        this.entityEngine.addEntity(this.entityFactory.createCrossHair(this.gameData.towerPosition.facing));
 
         this.entityEngine.addEntity(this.entityFactory.createGreenScum(new Vector2(100,100), new Vector2(0, 0), 5F, 100L));
         this.entityEngine.addEntity(this.entityFactory.createBigFuck(new Vector2(-150, 100), new Vector2(0, 0), 5F, 100L));
@@ -66,6 +73,7 @@ public class GameEngine {
         this.entityEngine.addSystem(new DelaySystem());
         this.entityEngine.addSystem(new AnimationSystem());
         this.entityEngine.addSystem(new MotionSystem());
+        this.entityEngine.addSystem(new DamageSystem());
         this.entityEngine.addSystem(new DrawingSystem(this.resources));
     }
 
@@ -91,36 +99,116 @@ public class GameEngine {
             return;
         }
 
-        Vector2 shootFacing = this.gameData.towerFacing.nor();
+        Vector2 shootFacing = this.gameData.towerPosition.facing.nor();
 
         switch (weaponType) {
             case GUN:
-                this.entityEngine.addEntity(this.entityFactory.createGun(this.createBulletStartPosition(shootFacing), new Vector2(shootFacing), this.entityEngine));
+                this.entityEngine.addEntity(this.entityFactory.createGun(this.createBulletStartPosition(shootFacing), new Vector2(shootFacing), this.entityEngine, new DamageHandler() {
+                    @Override
+                    public void dealDamage(Entity damageSource, List<Entity> entitiesToCheck) {
+                        GameEngine.this.dealDamageGun(damageSource, entitiesToCheck);
+                    }
+                }));
                 this.gameData.weaponEnergies.get(WeaponType.GUN).reset();
                 this.gameData.towerAnimation.resetAnimation();
                 break;
             case LASER:
-                List<Entity> entities = this.entityFactory.createLaser(new Vector2(0, 0), new Vector2(shootFacing), this.entityEngine, TOWER_LENGTH);
-                for (Entity entity : entities) {
-                    this.entityEngine.addEntity(entity);
+                List<Entity> entities = this.entityFactory.createLaser(this.gameData.towerPosition.position, shootFacing, this.entityEngine, TOWER_LENGTH, new DamageHandler() {
+                    @Override
+                    public void dealDamage(Entity damageSource, List<Entity> entitiesToCheck) {
+                        GameEngine.this.dealDamageLaser(damageSource, entitiesToCheck);
+                    }
+                });
+                for (Entity singleEntity : entities) {
+                    this.entityEngine.addEntity(singleEntity);
                 }
                 this.gameData.weaponEnergies.get(WeaponType.LASER).reset();
                 break;
             case BOMB:
-                this.entityEngine.addEntity(this.entityFactory.createBomb(this.createBulletStartPosition(shootFacing), new Vector2(shootFacing), this.entityEngine));
+                this.entityEngine.addEntity(this.entityFactory.createBomb(this.createBulletStartPosition(shootFacing), new Vector2(shootFacing), this.entityEngine, new DamageHandler() {
+                    @Override
+                    public void dealDamage(Entity damageSource, List<Entity> entitiesToCheck) {
+                        GameEngine.this.dealDamageBomb(damageSource, entitiesToCheck);
+                    }
+                }));
                 this.gameData.weaponEnergies.get(WeaponType.BOMB).reset();
                 this.gameData.towerAnimation.resetAnimation();
                 break;
             case BLAST:
-                entities = this.entityFactory.createBlast(new Vector2(0, 0), this.entityEngine);
-                for (Entity entity : entities) {
-                    this.entityEngine.addEntity(entity);
+                entities = this.entityFactory.createBlast(new Vector2(0, 0), this.entityEngine, new DamageHandler() {
+                    @Override
+                    public void dealDamage(Entity damageSource, List<Entity> entitiesToCheck) {
+                        GameEngine.this.dealDamageGun(damageSource, entitiesToCheck);
+                    }
+                });
+                for (Entity singleEntity : entities) {
+                    this.entityEngine.addEntity(singleEntity);
                 }
                 this.gameData.weaponEnergies.get(WeaponType.BLAST).reset();
                 this.gameData.towerAnimation.resetAnimation();
                 break;
         }
     }
+
+    private void dealDamageGun(Entity damageSource, List<Entity> entitiesToCheck) {
+
+    }
+
+    private void dealDamageLaser(Entity damageSource, List<Entity> entitiesToCheck) {
+        DamageComponent damageComponent = this.damageComponentComponentMapper.get(damageSource);
+        PositionComponent positionComponent = this.positionComponentComponentMapper.get(damageSource);
+        if (damageComponent == null || damageComponent.lastFacing == null || positionComponent == null || positionComponent.facing == null) {
+            return;
+        }
+        float startAngle = this.gameData.towerMotionHandler.getSpeed() < 0 ? damageComponent.lastFacing.angle() : positionComponent.facing.angle();
+        float endAngle = this.gameData.towerMotionHandler.getSpeed() < 0 ? positionComponent.facing.angle() : damageComponent.lastFacing.angle();
+
+        for (Entity entity : entitiesToCheck) {
+            PositionComponent enemyPositionComponent = this.positionComponentComponentMapper.get(entity);
+            HealthComponent enemyHealthComponent = this.healthComponentComponentMapper.get(entity);
+
+            if (enemyPositionComponent != null && enemyHealthComponent != null) {
+                float enemyAngle = enemyPositionComponent.position.angle();
+                float lastEnemyAngle = enemyPositionComponent.lastPosition.angle();
+
+                if (this.angleInRange(startAngle, enemyAngle, endAngle) || this.angleInRange(startAngle, lastEnemyAngle, endAngle)) {
+                    long laserDamage = this.getLaserDamage();
+                    enemyHealthComponent.health -= laserDamage;
+                    this.entityEngine.addEntity(this.entityFactory.createDamageLabel(enemyPositionComponent.position, laserDamage, FontType.NORMAL, this.entityEngine));
+                }
+            }
+        }
+    }
+
+    private boolean angleInRange(float startAngle, float enemyAngle, float endAngle) {
+        return startAngle > enemyAngle && enemyAngle > endAngle ||
+                startAngle < endAngle && (enemyAngle > endAngle || enemyAngle < startAngle);
+    }
+
+    private void dealDamageBomb(Entity damageSource, List<Entity> entitiesToCheck) {
+
+    }
+
+    private void dealDamageBlast(Entity damageSource, List<Entity> entitiesToCheck) {
+
+    }
+
+    private long getGunDamage() {
+        return 20;
+    }
+
+    private long getLaserDamage() {
+        return 20;
+    }
+
+    private long getBlastDamage() {
+        return 20;
+    }
+
+    private long getBombDamage() {
+        return 20;
+    }
+
 
     private Vector2 createBulletStartPosition(Vector2 shootFacing) {
         return new Vector2(shootFacing.x * TOWER_LENGTH, shootFacing.y * TOWER_LENGTH);

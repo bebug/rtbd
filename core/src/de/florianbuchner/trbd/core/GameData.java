@@ -1,9 +1,8 @@
 package de.florianbuchner.trbd.core;
 
-import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.Vector2;
+import de.florianbuchner.trbd.entity.CircleMotionHandler;
 import de.florianbuchner.trbd.entity.component.AnimationComponent;
+import de.florianbuchner.trbd.entity.component.PositionComponent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,7 +17,9 @@ public class GameData {
 
     public int level;
 
-    public Vector2 towerFacing;
+    public PositionComponent towerPosition;
 
     public AnimationComponent towerAnimation;
+
+    public CircleMotionHandler towerMotionHandler;
 }
