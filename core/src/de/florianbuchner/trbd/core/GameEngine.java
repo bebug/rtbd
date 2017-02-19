@@ -3,6 +3,9 @@ package de.florianbuchner.trbd.core;
 import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
+import com.badlogic.gdx.math.Circle;
+import com.badlogic.gdx.math.Intersector;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import de.florianbuchner.trbd.background.BackgroundComposer;
 import de.florianbuchner.trbd.entity.CircleMotionHandler;
@@ -10,6 +13,7 @@ import de.florianbuchner.trbd.entity.EntityFactory;
 import de.florianbuchner.trbd.entity.component.*;
 import de.florianbuchner.trbd.entity.system.*;
 
+import java.util.LinkedList;
 import java.util.List;
 
 public class GameEngine {
@@ -67,16 +71,17 @@ public class GameEngine {
 
         this.entityEngine.addEntity(this.entityFactory.createGreenScum(new Vector2(100,100), new Vector2(0, 0), 5F, 100L));
         this.entityEngine.addEntity(this.entityFactory.createBigFuck(new Vector2(-150, 100), new Vector2(0, 0), 5F, 100L));
+        this.entityEngine.addEntity(this.entityFactory.createRedDick(new Vector2(-100, -100), new Vector2(0, 0), 5F, 100L));
     }
 
     private void createBaseSystems() {
         this.entityEngine.addSystem(new DelaySystem());
         this.entityEngine.addSystem(new AnimationSystem());
         this.entityEngine.addSystem(new MotionSystem());
+        this.entityEngine.addSystem(new PositionSystem());
         this.entityEngine.addSystem(new DamageSystem());
         this.entityEngine.addSystem(new DrawingSystem(this.resources));
     }
-
 
     public void restart() {
         for (WeaponType weaponType : WeaponType.values()) {
@@ -138,20 +143,37 @@ public class GameEngine {
                 entities = this.entityFactory.createBlast(new Vector2(0, 0), this.entityEngine, new DamageHandler() {
                     @Override
                     public void dealDamage(Entity damageSource, List<Entity> entitiesToCheck) {
-                        GameEngine.this.dealDamageGun(damageSource, entitiesToCheck);
+                        GameEngine.this.dealDamageBlast(damageSource, entitiesToCheck);
                     }
                 });
                 for (Entity singleEntity : entities) {
                     this.entityEngine.addEntity(singleEntity);
                 }
                 this.gameData.weaponEnergies.get(WeaponType.BLAST).reset();
-                this.gameData.towerAnimation.resetAnimation();
                 break;
         }
     }
 
     private void dealDamageGun(Entity damageSource, List<Entity> entitiesToCheck) {
+        DamageComponent damageComponent = this.damageComponentComponentMapper.get(damageSource);
+        PositionComponent positionComponent = this.positionComponentComponentMapper.get(damageSource);
+        if (damageComponent == null || positionComponent == null || positionComponent.body == null) {
+            return;
+        }
 
+        for (Entity entity : entitiesToCheck) {
+            PositionComponent enemyPosition = this.positionComponentComponentMapper.get(entity);
+            HealthComponent enemyHealthComponent = this.healthComponentComponentMapper.get(entity);
+
+            if (enemyHealthComponent != null && enemyPosition != null && enemyPosition.body != null &&
+                    Intersector.overlapConvexPolygons(positionComponent.body, enemyPosition.body)) {
+                long gunDamage = this.getGunDamage();
+                enemyHealthComponent.health -= gunDamage;
+                this.entityEngine.addEntity(this.entityFactory.createDamageLabel(enemyPosition.position, gunDamage, FontType.NORMAL, this.entityEngine));
+                this.entityEngine.removeEntity(damageSource);
+                return;
+            }
+        }
     }
 
     private void dealDamageLaser(Entity damageSource, List<Entity> entitiesToCheck) {
@@ -186,11 +208,66 @@ public class GameEngine {
     }
 
     private void dealDamageBomb(Entity damageSource, List<Entity> entitiesToCheck) {
+        DamageComponent damageComponent = this.damageComponentComponentMapper.get(damageSource);
+        PositionComponent positionComponent = this.positionComponentComponentMapper.get(damageSource);
+        if (damageComponent == null || positionComponent == null || positionComponent.body == null) {
+            return;
+        }
 
+        boolean hit = false;
+        List<Entity> entitiesToDamage = new LinkedList<Entity>();
+        Circle damageRange = new Circle(positionComponent.position, this.getBombRange());
+        for (Entity entity : entitiesToCheck) {
+            PositionComponent enemyPosition = this.positionComponentComponentMapper.get(entity);
+
+            if (enemyPosition != null && enemyPosition.body != null) {
+                if(Intersector.overlapConvexPolygons(positionComponent.body, enemyPosition.body)) {
+                    hit = true;
+                    for (Entity explosionEntity : this.entityFactory.createExplosions(new Vector2(positionComponent.position), damageRange.radius, 12, 0.5f, this.entityEngine)) {
+                        this.entityEngine.addEntity(explosionEntity);
+                    }
+                    this.entityEngine.removeEntity(damageSource);
+                }
+
+                if (damageRange.contains(enemyPosition.position)) {
+                    entitiesToDamage.add(entity);
+                }
+            }
+        }
+
+        if (hit) {
+            for (Entity entity : entitiesToDamage) {
+                PositionComponent enemyPositionComponent = this.positionComponentComponentMapper.get(entity);
+                HealthComponent enemyHealthComponent = this.healthComponentComponentMapper.get(entity);
+
+                if (enemyHealthComponent != null) {
+                    long bombDamage = this.getBombDamage();
+                    enemyHealthComponent.health -= bombDamage;
+                    this.entityEngine.addEntity(this.entityFactory.createDamageLabel(enemyPositionComponent.position, bombDamage, FontType.NORMAL, this.entityEngine));
+                }
+            }
+        }
     }
 
     private void dealDamageBlast(Entity damageSource, List<Entity> entitiesToCheck) {
+        this.entityEngine.removeEntity(damageSource);
 
+        Circle damageRange = new Circle(0, 0, 100f);
+
+        for (Entity entity : entitiesToCheck) {
+            PositionComponent enemyPositionComponent = this.positionComponentComponentMapper.get(entity);
+            HealthComponent enemyHealthComponent = this.healthComponentComponentMapper.get(entity);
+
+            if (enemyPositionComponent != null && enemyHealthComponent != null && damageRange.contains(enemyPositionComponent.position)){
+                long blastDamage = this.getBlastDamage();
+                enemyHealthComponent.health -= blastDamage;
+                this.entityEngine.addEntity(this.entityFactory.createDamageLabel(enemyPositionComponent.position, blastDamage, FontType.NORMAL, this.entityEngine));
+            }
+        }
+    }
+
+    private float getBombRange() {
+        return 60f;
     }
 
     private long getGunDamage() {

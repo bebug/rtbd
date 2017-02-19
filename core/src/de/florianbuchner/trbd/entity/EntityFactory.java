@@ -4,6 +4,7 @@ import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
 import de.florianbuchner.trbd.core.DamageHandler;
 import de.florianbuchner.trbd.core.EnemyType;
@@ -139,7 +140,9 @@ public class EntityFactory {
 
     public Entity createGun(Vector2 startPosition, Vector2 facing, final Engine engine, final DamageHandler damageHandler) {
         final Entity entity = new Entity();
-        entity.add(new PositionComponent(startPosition, facing.nor(), PositionComponent.PositionLayer.Explosion));
+        PositionComponent positionComponent = new PositionComponent(startPosition, facing.nor(), PositionComponent.PositionLayer.Explosion);
+        positionComponent.body = new Polygon(new float[]{-5f, -5f, -5f, 5f, 5f, 5f, 5f, -5f});
+        entity.add(positionComponent);
         entity.add(new DrawingComponent(this.gunTextureRegion));
         entity.add(new MotionComponent(new LineMotionHandler(170F)));
         entity.add(new DelayComponent(new DelayComponent.DelayHandler() {
@@ -177,7 +180,9 @@ public class EntityFactory {
 
     public Entity createBomb(Vector2 startPosition, Vector2 facing, final Engine engine, final DamageHandler damageHandler) {
         final Entity entity = new Entity();
-        entity.add(new PositionComponent(startPosition, facing.nor(), PositionComponent.PositionLayer.Explosion));
+        PositionComponent positionComponent = new PositionComponent(startPosition, facing.nor(), PositionComponent.PositionLayer.Explosion);
+        positionComponent.body = new Polygon(new float[]{-7f, -5f, -7f, 5f, 7f, 5f, 7f, -5f});
+        entity.add(positionComponent);
         entity.add(new DrawingComponent(this.bombTextureRegion));
         entity.add(new MotionComponent(new LineMotionHandler(100F)));
         entity.add(new DelayComponent(new DelayComponent.DelayHandler() {
@@ -197,7 +202,9 @@ public class EntityFactory {
         entities.addAll(this.createBlastRing(centerPosition, engine, 0.3F, 60F, 10F));
         entities.addAll(this.createBlastRing(centerPosition, engine, 0.6F, 80F, 0F));
 
-        entities.get(0).add(new DamageComponent(damageHandler));
+        Entity damageEntity = new Entity();
+        damageEntity.add(new DamageComponent(damageHandler));
+        entities.add(damageEntity);
 
         return entities;
     }
@@ -233,7 +240,27 @@ public class EntityFactory {
         animationComponent.textureOffset = new Vector2(-35, -12);
         entity.add(animationComponent);
         entity.add(new MotionComponent(new LineMotionHandler(speed)));
-        entity.add(new PositionComponent(new Vector2(startPosition), endPosition.sub(startPosition).nor(), PositionComponent.PositionLayer.Enemy));
+        PositionComponent positionComponent = new PositionComponent(new Vector2(startPosition), endPosition.sub(startPosition).nor(), PositionComponent.PositionLayer.Enemy);
+        switch (enemyType) {
+            case RED_DICK:
+                positionComponent.body = new Polygon(new float[] {
+                        -12f, 5f,
+                        13f, 5f,
+                        13f, -5f,
+                        -12f, -5f
+                });
+                break;
+            case BIG_FUCK:
+            default:
+                positionComponent.body = new Polygon(new float[] {
+                        -15f, 0f,
+                        6f, 10f,
+                        14f, 0f,
+                        6f, -10f
+                });
+                break;
+        }
+        entity.add(positionComponent);
         entity.add(new HealthComponent(health, 20));
         entity.add(new EnemyComponent());
 
@@ -246,7 +273,14 @@ public class EntityFactory {
         animationComponent.textureOffset = new Vector2(-35, -15);
         entity.add(animationComponent);
         entity.add(new MotionComponent(new SineMotionHandler(speed, endPosition.sub(startPosition).nor(), new Vector2(startPosition))));
-        entity.add(new PositionComponent(new Vector2(startPosition), new Vector2(0, 0), PositionComponent.PositionLayer.Enemy));
+        PositionComponent positionComponent = new PositionComponent(new Vector2(startPosition), new Vector2(0, 0), PositionComponent.PositionLayer.Enemy);
+        positionComponent.body = new Polygon(new float[]{
+                -15f, -0f,
+                0f, 15f,
+                15f, 0f,
+                0f, -15f
+        });
+        entity.add(positionComponent);
         entity.add(new HealthComponent(health, 20));
         entity.add(new EnemyComponent());
 

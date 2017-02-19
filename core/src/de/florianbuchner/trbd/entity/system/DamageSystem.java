@@ -5,8 +5,9 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.systems.IteratingSystem;
 import com.badlogic.gdx.math.Vector2;
-import de.florianbuchner.trbd.core.DamageHandler;
-import de.florianbuchner.trbd.entity.component.*;
+import de.florianbuchner.trbd.entity.component.DamageComponent;
+import de.florianbuchner.trbd.entity.component.EnemyComponent;
+import de.florianbuchner.trbd.entity.component.PositionComponent;
 
 import java.util.LinkedList;
 import java.util.List;

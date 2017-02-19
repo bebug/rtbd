@@ -1,6 +1,7 @@
 package de.florianbuchner.trbd.entity.component;
 
 import com.badlogic.ashley.core.Component;
+import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
 
 public class PositionComponent implements Component {
@@ -8,6 +9,7 @@ public class PositionComponent implements Component {
     public Vector2 lastPosition;
     public Vector2 facing;
     public PositionLayer positionLayer;
+    public Polygon body;
 
     public enum PositionLayer{
         Background,

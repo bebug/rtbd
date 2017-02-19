@@ -4,9 +4,11 @@ import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.systems.IteratingSystem;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.Array;
 import de.florianbuchner.trbd.core.FontType;
 import de.florianbuchner.trbd.core.Resources;
@@ -16,6 +18,8 @@ import org.w3c.dom.Text;
 import java.util.*;
 
 public class DrawingSystem extends IteratingSystem {
+
+    private final boolean showPolygons = true;
 
     private class HealthDrawingContainer {
         public PositionComponent positionComponent;
@@ -99,12 +103,30 @@ public class DrawingSystem extends IteratingSystem {
         this.drawEntities(this.drawEntities.get(PositionComponent.PositionLayer.Enemy));
         this.drawEntities(this.drawEntities.get(PositionComponent.PositionLayer.Explosion));
         this.drawEntities(this.drawEntities.get(PositionComponent.PositionLayer.Foreground));
-        this.drawEntities(this.drawEntities.get(PositionComponent.PositionLayer.Foreground));
 
         this.drawHealthEntities(this.healthEntities);
         this.drawText(this.textEntities);
 
         this.resources.spriteBatch.end();
+
+        if (this.showPolygons) {
+            this.resources.shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+            this.resources.shapeRenderer.setColor(new Color(Color.WHITE));
+            this.drawShapes(this.drawEntities.get(PositionComponent.PositionLayer.Enemy));
+            this.resources.shapeRenderer.setColor(new Color(Color.RED));
+            this.drawShapes(this.drawEntities.get(PositionComponent.PositionLayer.Explosion));
+
+            this.resources.shapeRenderer.end();
+        }
+    }
+
+    private void drawShapes(List<Entity> entityList) {
+        for (Entity entity : entityList) {
+            PositionComponent positionComponent = this.positionComponentComponentMapper.get(entity);
+            if (positionComponent != null && positionComponent.body != null) {
+                this.resources.shapeRenderer.polygon(positionComponent.body.getTransformedVertices());
+            }
+        }
     }
 
     private void drawText(List<Entity> entityList) {

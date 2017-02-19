@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import de.florianbuchner.trbd.core.FontType;
 import de.florianbuchner.trbd.core.GameData;
 import de.florianbuchner.trbd.core.Resources;
@@ -34,6 +35,9 @@ public class Rtbd extends Game {
         this.resources.fonts.put(FontType.NORMAL, new BitmapFont(Gdx.files.internal("font-white-export.fnt")));
         this.resources.fonts.put(FontType.WARN, new BitmapFont(Gdx.files.internal("font-red-export.fnt")));
         this.resources.fonts.put(FontType.INFO, new BitmapFont(Gdx.files.internal("font-yellow-export.fnt")));
+
+        this.resources.shapeRenderer = new ShapeRenderer();
+        this.resources.shapeRenderer.setProjectionMatrix(this.resources.camera.combined);
 
         this.setScreen(new GameScreen(this));
     }
