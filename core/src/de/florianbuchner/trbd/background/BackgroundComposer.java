@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class BackgroundComposer {
+public class BackgroundComposer implements BackgroundTileHandler {
 
     private final int TILESIZE = 19;
 
@@ -322,6 +322,11 @@ public class BackgroundComposer {
         } else {
             return (int) ((positionY - startY) / TILESIZE);
         }
+    }
+
+    @Override
+    public void destroyTile(Vector2 position) {
+        this.setTile(position.x, position.y, BackgroundEntity.BackgroundType.SOIL);
     }
 
     public class TileCombination {

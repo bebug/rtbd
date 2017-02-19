@@ -80,6 +80,7 @@ public class GameEngine {
         this.entityEngine.addSystem(new MotionSystem());
         this.entityEngine.addSystem(new PositionSystem());
         this.entityEngine.addSystem(new DamageSystem());
+        this.entityEngine.addSystem(new HealthSystem(this.entityFactory, this.entityEngine, this.backgroundComposer));
         this.entityEngine.addSystem(new DrawingSystem(this.resources));
     }
 
@@ -95,7 +96,25 @@ public class GameEngine {
         this.entityEngine.update(delta);
 
         for (WeaponType weaponType : WeaponType.values()) {
-            this.gameData.weaponEnergies.get(weaponType).add(delta * 0.1f);
+            float energyGain = 0f;
+            switch (weaponType) {
+                case GUN:
+                    energyGain = 0.95f;
+                    break;
+                case BLAST:
+                    energyGain = 0.2f;
+                    break;
+                case LASER:
+                    energyGain = 0.25f;
+                    break;
+                case BOMB:
+                    energyGain = 0.4f;
+                    break;
+                default:
+                    break;
+            }
+
+            this.gameData.weaponEnergies.get(weaponType).add(delta * energyGain);
         }
     }
 
@@ -285,7 +304,6 @@ public class GameEngine {
     private long getBombDamage() {
         return 20;
     }
-
 
     private Vector2 createBulletStartPosition(Vector2 shootFacing) {
         return new Vector2(shootFacing.x * TOWER_LENGTH, shootFacing.y * TOWER_LENGTH);

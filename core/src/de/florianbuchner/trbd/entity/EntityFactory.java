@@ -170,7 +170,7 @@ public class EntityFactory {
                 public void onDelay() {
                     engine.removeEntity(entity);
                 }
-            }, 3F));
+            }, 0.7F));
             entities.add(entity);
         }
         entities.get(0).add(new DamageComponent(damageHandler));
