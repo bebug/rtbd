@@ -3,10 +3,8 @@ package de.florianbuchner.trbd.core;
 import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
-import com.badlogic.gdx.math.Circle;
-import com.badlogic.gdx.math.Intersector;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.math.*;
 import de.florianbuchner.trbd.background.BackgroundComposer;
 import de.florianbuchner.trbd.entity.CircleMotionHandler;
 import de.florianbuchner.trbd.entity.EntityFactory;
@@ -81,7 +79,7 @@ public class GameEngine {
         this.entityEngine.addSystem(new PositionSystem());
         this.entityEngine.addSystem(new DamageSystem());
         this.entityEngine.addSystem(new HealthSystem(this.entityFactory, this.entityEngine, this.backgroundComposer));
-        this.entityEngine.addSystem(new DrawingSystem(this.resources));
+        this.entityEngine.addSystem(new DrawingSystem(this.resources, this.gameData));
     }
 
     public void restart() {
@@ -171,6 +169,21 @@ public class GameEngine {
                 this.gameData.weaponEnergies.get(WeaponType.BLAST).reset();
                 break;
         }
+    }
+
+    public void rotateScreen(float angle) {
+        this.setScreenRoation(this.gameData.rotationAngle + angle);
+    }
+
+    public void setScreenRoation(float angle) {
+        if (this.gameData.rotationAngle - angle > 180f) {
+            this.gameData.rotationAngle -= 360;
+        }
+        if (this.gameData.rotationAngle - angle < -180f) {
+            this.gameData.rotationAngle += 360;
+        }
+
+        this.gameData.rotationAngle = this.gameData.rotationAngle * 0.8f + angle * 0.2f;
     }
 
     private void dealDamageGun(Entity damageSource, List<Entity> entitiesToCheck) {

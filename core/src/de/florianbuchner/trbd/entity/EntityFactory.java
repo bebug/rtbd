@@ -70,7 +70,9 @@ public class EntityFactory {
         final Entity entity = new Entity();
         entity.add(new PositionComponent(position, new Vector2(1, 0), PositionComponent.PositionLayer.Explosion));
 
-        entity.add(new AnimationComponent(new Animation(0.1f, explosionRegions), false));
+        AnimationComponent animationComponent = new AnimationComponent(new Animation(0.1f, explosionRegions), false);
+        animationComponent.disableRotation = true;
+        entity.add(animationComponent);
         entity.add(new DelayComponent(new DelayComponent.DelayHandler() {
             @Override
             public void onDelay() {
@@ -290,7 +292,9 @@ public class EntityFactory {
     public Entity createDamageLabel(Vector2 position, long damage, FontType fontType, final Engine engine) {
         final Entity entity = new Entity();
         entity.add(new TextComponent(String.valueOf(damage), fontType));
-        entity.add(new PositionComponent(new Vector2(position), new Vector2(0, 1), null));
+        PositionComponent positionComponent = new PositionComponent(new Vector2(position), new Vector2(0, 1), null);
+        positionComponent.startPosition = new Vector2(position);
+        entity.add(positionComponent);
         entity.add(new DelayComponent(new DelayComponent.DelayHandler() {
             @Override
             public void onDelay() {

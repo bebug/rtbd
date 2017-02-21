@@ -9,8 +9,10 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.utils.Array;
 import de.florianbuchner.trbd.core.FontType;
+import de.florianbuchner.trbd.core.GameData;
 import de.florianbuchner.trbd.core.Resources;
 import de.florianbuchner.trbd.entity.component.*;
 import org.w3c.dom.Text;
@@ -27,6 +29,7 @@ public class DrawingSystem extends IteratingSystem {
     }
 
     private Resources resources;
+    private GameData gameData;
     private Map<PositionComponent.PositionLayer, List<Entity>> drawEntities;
     private List<HealthDrawingContainer> healthEntities;
     private List<Entity> textEntities;
@@ -40,9 +43,10 @@ public class DrawingSystem extends IteratingSystem {
     private TextureRegion healthbarEmpty;
     private TextureRegion healthbar;
 
-    public DrawingSystem(Resources resources) {
+    public DrawingSystem(Resources resources, GameData gameData) {
         super(Family.all(PositionComponent.class).one(AnimationComponent.class, DrawingComponent.class, TextComponent.class).get());
 
+        this.gameData = gameData;
         this.resources = resources;
 
         TextureRegion healthTextureRegion = resources.textureAtlas.createSprite("healthbar");
@@ -87,6 +91,10 @@ public class DrawingSystem extends IteratingSystem {
 
     @Override
     public void update(float deltaTime) {
+        Matrix4 rotationMatrix = new Matrix4().rotate(0, 0, 1, this.gameData.rotationAngle);
+        Matrix4 rotated = new Matrix4(this.resources.camera.combined).mul(rotationMatrix);
+        this.resources.spriteBatch.setProjectionMatrix(rotated);
+
         this.healthEntities.clear();
         this.textEntities.clear();
         for (PositionComponent.PositionLayer positionLayer : PositionComponent.PositionLayer.values()) {
@@ -104,12 +112,16 @@ public class DrawingSystem extends IteratingSystem {
         this.drawEntities(this.drawEntities.get(PositionComponent.PositionLayer.Explosion));
         this.drawEntities(this.drawEntities.get(PositionComponent.PositionLayer.Foreground));
 
-        this.drawHealthEntities(this.healthEntities);
-        this.drawText(this.textEntities);
+        // reset projection
+        this.resources.spriteBatch.setProjectionMatrix(this.resources.camera.combined);
+
+        this.drawHealthEntities(this.healthEntities, rotationMatrix);
+        this.drawText(this.textEntities, rotationMatrix);
 
         this.resources.spriteBatch.end();
 
         if (this.showPolygons) {
+            this.resources.shapeRenderer.setProjectionMatrix(rotated);
             this.resources.shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
             this.resources.shapeRenderer.setColor(new Color(Color.WHITE));
             this.drawShapes(this.drawEntities.get(PositionComponent.PositionLayer.Enemy));
@@ -117,6 +129,7 @@ public class DrawingSystem extends IteratingSystem {
             this.drawShapes(this.drawEntities.get(PositionComponent.PositionLayer.Explosion));
 
             this.resources.shapeRenderer.end();
+            this.resources.shapeRenderer.setProjectionMatrix(this.resources.camera.combined);
         }
     }
 
@@ -129,11 +142,18 @@ public class DrawingSystem extends IteratingSystem {
         }
     }
 
-    private void drawText(List<Entity> entityList) {
+    private void drawText(List<Entity> entityList, Matrix4 rotationMatrix) {
         for (Entity entity : entityList) {
             TextComponent textComponent = this.textComponentComponentMapper.get(entity);
             PositionComponent positionComponent = this.positionComponentComponentMapper.get(entity);
-            this.resources.fonts.get(textComponent.fontType).draw(this.resources.spriteBatch, textComponent.text, positionComponent.position.x, positionComponent.position.y);
+            if (positionComponent.startPosition != null) {
+                Vector2 rotated = this.rotate(positionComponent.startPosition, rotationMatrix).sub(new Vector2(positionComponent.startPosition).sub(positionComponent.position));
+                this.resources.fonts.get(textComponent.fontType).draw(this.resources.spriteBatch, textComponent.text, rotated.x, rotated.y);
+            }
+            else {
+                Vector2 rotated = this.rotate(positionComponent.position, rotationMatrix);
+                this.resources.fonts.get(textComponent.fontType).draw(this.resources.spriteBatch, textComponent.text, rotated.x, rotated.y);
+            }
         }
     }
 
@@ -154,19 +174,25 @@ public class DrawingSystem extends IteratingSystem {
                     drawingComponent.textureRegion.getRegionHeight(),
                     1,
                     1,
-                    positionComponent.facing.angle());
+                    drawingComponent.disableRotation ? positionComponent.facing.angle() - this.gameData.rotationAngle : positionComponent.facing.angle());
         }
     }
 
-    private void drawHealthEntities(final List<HealthDrawingContainer> drawEntities) {
+    private void drawHealthEntities(final List<HealthDrawingContainer> drawEntities, Matrix4 rotationMatrix) {
         for (HealthDrawingContainer drawEntity : drawEntities) {
-            this.resources.spriteBatch.draw(this.healthbarEmpty, drawEntity.positionComponent.position.x - this.healthbarEmpty.getRegionWidth() / 2,
-                    drawEntity.positionComponent.position.y + drawEntity.healthComponent.yOffset);
-            this.resources.spriteBatch.draw(this.healthbar.getTexture(), drawEntity.positionComponent.position.x - this.healthbar.getRegionWidth() / 2,
-                    drawEntity.positionComponent.position.y + drawEntity.healthComponent.yOffset,
+            Vector2 rotated = this.rotate(drawEntity.positionComponent.position, rotationMatrix);
+
+            this.resources.spriteBatch.draw(this.healthbarEmpty, rotated.x - this.healthbarEmpty.getRegionWidth() / 2,
+                    rotated.y + drawEntity.healthComponent.yOffset);
+            this.resources.spriteBatch.draw(this.healthbar.getTexture(), rotated.x - this.healthbar.getRegionWidth() / 2,
+                    rotated.y + drawEntity.healthComponent.yOffset,
                     this.healthbar.getRegionX(), this.healthbar.getRegionY(),
                     (int) ((this.healthbar.getRegionWidth() * Math.max(drawEntity.healthComponent.health, 0L)) / drawEntity.healthComponent.maxHealth),
                     this.healthbar.getRegionHeight());
         }
+    }
+
+    private Vector2 rotate(Vector2 source, Matrix4 rotation) {
+        return new Vector2(source.x * rotation.val[Matrix4.M00] + source.y * rotation.val[Matrix4.M01], source.x * rotation.val[Matrix4.M10] + source.y * rotation.val[Matrix4.M11]);
     }
 }

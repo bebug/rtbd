@@ -1,6 +1,7 @@
 package de.florianbuchner.trbd.core;
 
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -15,7 +16,7 @@ public class Resources {
 
     public ShapeRenderer shapeRenderer;
 
-    public Camera camera;
+    public OrthographicCamera camera;
 
     public TextureAtlas textureAtlas;
 

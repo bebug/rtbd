@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Vector2;
 public class DrawingComponent implements Component {
     public TextureRegion textureRegion;
     public Vector2 textureOffset;
+    public boolean disableRotation;
 
     public DrawingComponent(Texture texture) {
         this(new TextureRegion(texture));

@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Vector2;
 public class PositionComponent implements Component {
     public Vector2 position;
     public Vector2 lastPosition;
+    public Vector2 startPosition;
     public Vector2 facing;
     public PositionLayer positionLayer;
     public Polygon body;

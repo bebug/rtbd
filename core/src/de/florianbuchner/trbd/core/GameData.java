@@ -1,5 +1,6 @@
 package de.florianbuchner.trbd.core;
 
+import com.badlogic.gdx.math.Matrix4;
 import de.florianbuchner.trbd.entity.CircleMotionHandler;
 import de.florianbuchner.trbd.entity.component.AnimationComponent;
 import de.florianbuchner.trbd.entity.component.PositionComponent;
@@ -22,4 +23,6 @@ public class GameData {
     public AnimationComponent towerAnimation;
 
     public CircleMotionHandler towerMotionHandler;
+
+    public float rotationAngle = 0f;
 }
