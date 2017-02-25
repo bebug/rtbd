@@ -11,10 +11,12 @@ import de.florianbuchner.trbd.entity.EntityFactory;
 import de.florianbuchner.trbd.entity.component.*;
 import de.florianbuchner.trbd.entity.system.*;
 
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
-public class GameEngine {
+public class GameEngine implements EnemySpawner {
 
     private final static float TOWER_LENGTH = 35F;
 
@@ -30,12 +32,14 @@ public class GameEngine {
     private ComponentMapper<HealthComponent> healthComponentComponentMapper;
     private ComponentMapper<MotionComponent> motionComponentComponentMapper;
 
+    private final Random randomizer;
 
     public GameEngine(GameData gameData, Resources resources, int length, int height) {
         this.gameData = gameData;
         this.resources = resources;
         this.entityFactory = new EntityFactory(resources);
         this.entityEngine = new Engine();
+        this.randomizer = new Random(new Date().getTime());
         this.backgroundComposer = new BackgroundComposer(length, height, resources);
         this.positionComponentComponentMapper = ComponentMapper.getFor(PositionComponent.class);
         this.animationComponentComponentMapper = ComponentMapper.getFor(AnimationComponent.class);
@@ -65,11 +69,6 @@ public class GameEngine {
             this.gameData.towerMotionHandler = (CircleMotionHandler)towerMotionComponent.handler;
         }
         this.entityEngine.addEntity(towerEntity);
-        this.entityEngine.addEntity(this.entityFactory.createCrossHair(this.gameData.towerPosition.facing));
-
-        this.entityEngine.addEntity(this.entityFactory.createGreenScum(new Vector2(100,100), new Vector2(0, 0), 5F, 100L));
-        this.entityEngine.addEntity(this.entityFactory.createBigFuck(new Vector2(-150, 100), new Vector2(0, 0), 5F, 100L));
-        this.entityEngine.addEntity(this.entityFactory.createRedDick(new Vector2(-100, -100), new Vector2(0, 0), 5F, 100L));
     }
 
     private void createBaseSystems() {
@@ -78,7 +77,9 @@ public class GameEngine {
         this.entityEngine.addSystem(new MotionSystem());
         this.entityEngine.addSystem(new PositionSystem());
         this.entityEngine.addSystem(new DamageSystem());
+        this.entityEngine.addSystem(new TargetSystem(this.entityEngine));
         this.entityEngine.addSystem(new HealthSystem(this.entityFactory, this.entityEngine, this.backgroundComposer));
+        this.entityEngine.addSystem(new EnemySystem(this));
         this.entityEngine.addSystem(new DrawingSystem(this.resources, this.gameData));
     }
 
@@ -320,5 +321,28 @@ public class GameEngine {
 
     private Vector2 createBulletStartPosition(Vector2 shootFacing) {
         return new Vector2(shootFacing.x * TOWER_LENGTH, shootFacing.y * TOWER_LENGTH);
+    }
+
+    @Override
+    public void spawnEnemies() {
+        for (int i = 0; i < this.getEnemieCount(); i++) {
+            float rnd = this.randomizer.nextFloat();
+            final Entity entity;
+            if (rnd < 0.1f) {
+                entity = this.entityFactory.createGreenScum(new Vector2(0,230).setAngle(this.randomizer.nextFloat() * 360f), new Vector2(0, 0), 5F, 100L);
+            }
+            else if (rnd < 0.4) {
+                entity = this.entityFactory.createBigFuck(new Vector2(0,230).setAngle(this.randomizer.nextFloat() * 360f), new Vector2(0, 0), 5F, 100L);
+            }
+            else {
+                entity = this.entityFactory.createRedDick(new Vector2(0,230).setAngle(this.randomizer.nextFloat() * 360f), new Vector2(0, 0), 5F, 100L);
+            }
+            this.entityEngine.addEntity(entity);
+            this.entityEngine.addEntity(this.entityFactory.createTargetArrow(this.positionComponentComponentMapper.get(entity), this.healthComponentComponentMapper.get(entity)));
+        }
+    }
+
+    private int getEnemieCount() {
+        return this.randomizer.nextInt(3 + 1);
     }
 }

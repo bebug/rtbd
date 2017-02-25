@@ -23,18 +23,18 @@ public class EntityFactory {
 
     private TextureRegion foundationTexture;
     private Animation towerAnimation;
-    private TextureRegion crosshairTexture;
     private TextureRegion gunTextureRegion;
     private TextureRegion bombTextureRegion;
+    private TextureRegion targetArrowTexture;
     private TextureRegion[] explosionRegions;
     private Animation laserAnimation;
     private Map<EnemyType, Animation> enemyAnimations = new HashMap<EnemyType, Animation>(EnemyType.values().length);
 
     public EntityFactory(Resources resources) {
         this.foundationTexture = resources.textureAtlas.createSprite("foundation");
+        this.targetArrowTexture = resources.textureAtlas.createSprite("target-arrow");
 
         TextureRegion explosionTexture = resources.textureAtlas.createSprite("explosion");
-        this.crosshairTexture = resources.textureAtlas.createSprite("crosshair");
         TextureRegion bulletsTexture = resources.textureAtlas.createSprite("bullets");
         TextureRegion enemiesTexture = resources.textureAtlas.createSprite("enemies");
         TextureRegion towerTexture = resources.textureAtlas.createSprite("tower");
@@ -120,16 +120,6 @@ public class EntityFactory {
         entity.add(new TowerComponent());
         entity.add(new MotionComponent(new CircleMotionHandler(new Vector2(0, 0), 0F, ROTATIONSPEED)));
         entity.add(new HealthComponent(200L, 30));
-        return entity;
-    }
-
-    /**
-     * @param facing will be set by reference
-     */
-    public Entity createCrossHair(Vector2 facing) {
-        Entity entity = new Entity();
-        entity.add(new DrawingComponent(this.crosshairTexture, new Vector2(80, -this.crosshairTexture.getRegionHeight() / 2F)));
-        entity.add(new PositionComponent(new Vector2(0, 0), facing, PositionComponent.PositionLayer.Foreground));
         return entity;
     }
 
@@ -286,6 +276,14 @@ public class EntityFactory {
         entity.add(new HealthComponent(health, 20));
         entity.add(new EnemyComponent());
 
+        return entity;
+    }
+
+    public Entity createTargetArrow(PositionComponent positionComponent, HealthComponent healthComponent) {
+        Entity entity = new Entity();
+        entity.add(new DrawingComponent(this.targetArrowTexture, new Vector2(23, -this.targetArrowTexture.getRegionHeight() / 2F)));
+        entity.add(new PositionComponent(new Vector2(0, 0), new Vector2(1, 0), PositionComponent.PositionLayer.Foreground));
+        entity.add(new TargetComponent(positionComponent, healthComponent));
         return entity;
     }
 
