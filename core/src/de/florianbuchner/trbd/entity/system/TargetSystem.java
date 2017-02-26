@@ -32,7 +32,7 @@ public class TargetSystem extends IteratingSystem {
 
         this.positionComponentComponentMapper.get(entity).facing.set(newFacing);
 
-        if (this.targetComponentComponentMapper.get(entity).healthComponent.health <= 0) {
+        if (this.targetComponentComponentMapper.get(entity).healthComponent.death) {
             this.engine.removeEntity(entity);
         }
     }

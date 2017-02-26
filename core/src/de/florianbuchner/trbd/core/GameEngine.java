@@ -3,7 +3,6 @@ package de.florianbuchner.trbd.core;
 import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.*;
 import de.florianbuchner.trbd.background.BackgroundComposer;
 import de.florianbuchner.trbd.entity.CircleMotionHandler;
@@ -16,7 +15,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
-public class GameEngine implements EnemySpawner {
+public class GameEngine implements EnemySpawner, KillHandler {
 
     private final static float TOWER_LENGTH = 35F;
 
@@ -78,7 +77,7 @@ public class GameEngine implements EnemySpawner {
         this.entityEngine.addSystem(new PositionSystem());
         this.entityEngine.addSystem(new DamageSystem());
         this.entityEngine.addSystem(new TargetSystem(this.entityEngine));
-        this.entityEngine.addSystem(new HealthSystem(this.entityFactory, this.entityEngine, this.backgroundComposer));
+        this.entityEngine.addSystem(new HealthSystem(this.entityFactory, this.entityEngine, this.backgroundComposer, this));
         this.entityEngine.addSystem(new EnemySystem(this));
         this.entityEngine.addSystem(new DrawingSystem(this.resources, this.gameData));
     }
@@ -324,25 +323,26 @@ public class GameEngine implements EnemySpawner {
     }
 
     @Override
-    public void spawnEnemies() {
-        for (int i = 0; i < this.getEnemieCount(); i++) {
-            float rnd = this.randomizer.nextFloat();
-            final Entity entity;
-            if (rnd < 0.1f) {
-                entity = this.entityFactory.createGreenScum(new Vector2(0,230).setAngle(this.randomizer.nextFloat() * 360f), new Vector2(0, 0), 5F, 100L);
+    public void spawnEnemies(int currentSize) {
+        if (currentSize <= 0) {
+            for (int i = 0; i < 3; i++) {
+                float rnd = this.randomizer.nextFloat();
+                final Entity entity;
+                if (rnd < 0.1f) {
+                    entity = this.entityFactory.createGreenScum(new Vector2(0, 230).setAngle(this.randomizer.nextFloat() * 360f), new Vector2(0, 0), 5F, 100L);
+                } else if (rnd < 0.4) {
+                    entity = this.entityFactory.createBigFuck(new Vector2(0, 230).setAngle(this.randomizer.nextFloat() * 360f), new Vector2(0, 0), 5F, 100L);
+                } else {
+                    entity = this.entityFactory.createRedDick(new Vector2(0, 230).setAngle(this.randomizer.nextFloat() * 360f), new Vector2(0, 0), 5F, 100L);
+                }
+                this.entityEngine.addEntity(entity);
+                this.entityEngine.addEntity(this.entityFactory.createTargetArrow(this.positionComponentComponentMapper.get(entity), this.healthComponentComponentMapper.get(entity)));
             }
-            else if (rnd < 0.4) {
-                entity = this.entityFactory.createBigFuck(new Vector2(0,230).setAngle(this.randomizer.nextFloat() * 360f), new Vector2(0, 0), 5F, 100L);
-            }
-            else {
-                entity = this.entityFactory.createRedDick(new Vector2(0,230).setAngle(this.randomizer.nextFloat() * 360f), new Vector2(0, 0), 5F, 100L);
-            }
-            this.entityEngine.addEntity(entity);
-            this.entityEngine.addEntity(this.entityFactory.createTargetArrow(this.positionComponentComponentMapper.get(entity), this.healthComponentComponentMapper.get(entity)));
         }
     }
 
-    private int getEnemieCount() {
-        return this.randomizer.nextInt(3 + 1);
+    @Override
+    public void enemyKilled() {
+
     }
 }

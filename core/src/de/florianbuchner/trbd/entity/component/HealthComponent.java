@@ -11,6 +11,8 @@ public class HealthComponent implements Component {
 
     public float yOffset;
 
+    public boolean death = false;
+
     public HealthComponent(long health, float yOffset) {
         this.health = health;
         this.maxHealth = health;
