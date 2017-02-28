@@ -1,7 +1,9 @@
 package de.florianbuchner.trbd;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -38,6 +40,8 @@ public class Rtbd extends Game {
 
         this.resources.shapeRenderer = new ShapeRenderer();
         this.resources.shapeRenderer.setProjectionMatrix(this.resources.camera.combined);
+        this.resources.isDevice = Gdx.app.getType().equals(Application.ApplicationType.Android) ||
+                Gdx.app.getType().equals(Application.ApplicationType.iOS);
 
         this.setScreen(new GameScreen(this));
     }

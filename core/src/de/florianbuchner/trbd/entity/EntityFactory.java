@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
-import de.florianbuchner.trbd.core.DamageHandler;
+import de.florianbuchner.trbd.core.CheckDamageHandler;
 import de.florianbuchner.trbd.core.EnemyType;
 import de.florianbuchner.trbd.core.FontType;
 import de.florianbuchner.trbd.core.Resources;
@@ -25,15 +25,14 @@ public class EntityFactory {
     private Animation towerAnimation;
     private TextureRegion gunTextureRegion;
     private TextureRegion bombTextureRegion;
-    private TextureRegion targetArrowTexture;
     private TextureRegion[] explosionRegions;
     private Animation laserAnimation;
+    private Animation targetArrowAnimation;
     private Map<EnemyType, Animation> enemyAnimations = new HashMap<EnemyType, Animation>(EnemyType.values().length);
 
     public EntityFactory(Resources resources) {
         this.foundationTexture = resources.textureAtlas.createSprite("foundation");
-        this.targetArrowTexture = resources.textureAtlas.createSprite("target-arrow");
-
+        TextureRegion targetArrowTexture = resources.textureAtlas.createSprite("target-arrow");
         TextureRegion explosionTexture = resources.textureAtlas.createSprite("explosion");
         TextureRegion bulletsTexture = resources.textureAtlas.createSprite("bullets");
         TextureRegion enemiesTexture = resources.textureAtlas.createSprite("enemies");
@@ -64,6 +63,9 @@ public class EntityFactory {
         this.towerAnimation = new Animation(0.1F,
                 new TextureRegion(towerTexture, towerTexture.getRegionWidth() / 2, 0, towerTexture.getRegionWidth() / 2, towerTexture.getRegionHeight()),
                 new TextureRegion(towerTexture, 0, 0, towerTexture.getRegionWidth() / 2, towerTexture.getRegionHeight()));
+
+        this.targetArrowAnimation = new Animation(0.3F, new TextureRegion(targetArrowTexture, 0, 0, targetArrowTexture.getRegionWidth(), targetArrowTexture.getRegionHeight()),
+               new TextureRegion(targetArrowTexture, 1, 0, targetArrowTexture.getRegionWidth() - 1, targetArrowTexture.getRegionHeight()));
     }
 
     public Entity createExplosion(Vector2 position, final Engine engine) {
@@ -130,7 +132,7 @@ public class EntityFactory {
         return entity;
     }
 
-    public Entity createGun(Vector2 startPosition, Vector2 facing, final Engine engine, final DamageHandler damageHandler) {
+    public Entity createGun(Vector2 startPosition, Vector2 facing, final Engine engine, final CheckDamageHandler checkDamageHandler) {
         final Entity entity = new Entity();
         PositionComponent positionComponent = new PositionComponent(startPosition, facing.nor(), PositionComponent.PositionLayer.Explosion);
         positionComponent.body = new Polygon(new float[]{-5f, -5f, -5f, 5f, 5f, 5f, 5f, -5f});
@@ -143,11 +145,11 @@ public class EntityFactory {
                 engine.removeEntity(entity);
             }
         }, 3F));
-        entity.add(new DamageComponent(damageHandler));
+        entity.add(new DamageComponent(checkDamageHandler));
         return entity;
     }
 
-    public List<Entity> createLaser(Vector2 positionReference, Vector2 facingReference, final Engine engine, float distance, final DamageHandler damageHandler) {
+    public List<Entity> createLaser(Vector2 positionReference, Vector2 facingReference, final Engine engine, float distance, final CheckDamageHandler checkDamageHandler) {
         final List<Entity> entities = new ArrayList<Entity>();
 
         for (int i = 0; i < 10; i++) {
@@ -165,12 +167,12 @@ public class EntityFactory {
             }, 0.7F));
             entities.add(entity);
         }
-        entities.get(0).add(new DamageComponent(damageHandler));
+        entities.get(0).add(new DamageComponent(checkDamageHandler));
 
         return entities;
     }
 
-    public Entity createBomb(Vector2 startPosition, Vector2 facing, final Engine engine, final DamageHandler damageHandler) {
+    public Entity createBomb(Vector2 startPosition, Vector2 facing, final Engine engine, final CheckDamageHandler checkDamageHandler) {
         final Entity entity = new Entity();
         PositionComponent positionComponent = new PositionComponent(startPosition, facing.nor(), PositionComponent.PositionLayer.Explosion);
         positionComponent.body = new Polygon(new float[]{-7f, -5f, -7f, 5f, 7f, 5f, 7f, -5f});
@@ -183,11 +185,11 @@ public class EntityFactory {
                 engine.removeEntity(entity);
             }
         }, 4F));
-        entity.add(new DamageComponent(damageHandler));
+        entity.add(new DamageComponent(checkDamageHandler));
         return entity;
     }
 
-    public List<Entity> createBlast(Vector2 centerPosition, final Engine engine, final DamageHandler damageHandler) {
+    public List<Entity> createBlast(Vector2 centerPosition, final Engine engine, final CheckDamageHandler checkDamageHandler) {
         final List<Entity> entities = new ArrayList<Entity>();
 
         entities.addAll(this.createBlastRing(centerPosition, engine, 0F, 40F, 0F));
@@ -195,7 +197,7 @@ public class EntityFactory {
         entities.addAll(this.createBlastRing(centerPosition, engine, 0.6F, 80F, 0F));
 
         Entity damageEntity = new Entity();
-        damageEntity.add(new DamageComponent(damageHandler));
+        damageEntity.add(new DamageComponent(checkDamageHandler));
         entities.add(damageEntity);
 
         return entities;
@@ -254,7 +256,7 @@ public class EntityFactory {
         }
         entity.add(positionComponent);
         entity.add(new HealthComponent(health, 20));
-        entity.add(new EnemyComponent());
+        entity.add(new EnemyComponent(20));
 
         return entity;
     }
@@ -274,14 +276,16 @@ public class EntityFactory {
         });
         entity.add(positionComponent);
         entity.add(new HealthComponent(health, 20));
-        entity.add(new EnemyComponent());
+        entity.add(new EnemyComponent(20));
 
         return entity;
     }
 
     public Entity createTargetArrow(PositionComponent positionComponent, HealthComponent healthComponent) {
         Entity entity = new Entity();
-        entity.add(new DrawingComponent(this.targetArrowTexture, new Vector2(23, -this.targetArrowTexture.getRegionHeight() / 2F)));
+        AnimationComponent animationComponent = new AnimationComponent(this.targetArrowAnimation, true);
+        animationComponent.textureOffset = new Vector2(23, -this.targetArrowAnimation.getKeyFrame(0).getRegionHeight() / 2F);
+        entity.add(animationComponent);
         entity.add(new PositionComponent(new Vector2(0, 0), new Vector2(1, 0), PositionComponent.PositionLayer.Foreground));
         entity.add(new TargetComponent(positionComponent, healthComponent));
         return entity;

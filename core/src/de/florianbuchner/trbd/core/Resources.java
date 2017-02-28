@@ -1,6 +1,5 @@
 package de.florianbuchner.trbd.core;
 
-import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -21,4 +20,6 @@ public class Resources {
     public TextureAtlas textureAtlas;
 
     public Map<FontType, BitmapFont> fonts = new HashMap<FontType, BitmapFont>();
+
+    public boolean isDevice;
 }

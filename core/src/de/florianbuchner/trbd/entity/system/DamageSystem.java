@@ -47,7 +47,7 @@ public class DamageSystem extends IteratingSystem {
 
         for (Entity damageEntity : damageEntities) {
             DamageComponent damageComponent =  this.damageComponentComponentMapper.get(damageEntity);
-            damageComponent.damageHandler.dealDamage(damageEntity, this.enemyEntities);
+            damageComponent.checkDamageHandler.dealDamage(damageEntity, this.enemyEntities);
 
             PositionComponent positionComponent = this.positionComponentComponentMapper.get(damageEntity);
             if (positionComponent != null) {

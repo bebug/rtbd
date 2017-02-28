@@ -40,19 +40,23 @@ public class HealthSystem extends IteratingSystem {
         HealthComponent healthComponent = this.healthComponentComponentMapper.get(entity);
 
         if (healthComponent.health <= 0L || healthComponent.death) {
+            // enemy killed by player
             if (!healthComponent.death) {
                 this.killHandler.enemyKilled();
             }
 
-            healthComponent.death = true;
-            PositionComponent positionComponent = this.positionComponentMapper.get(entity);
-
-            if (positionComponent != null) {
-                this.backgroundTileHandler.destroyTile(positionComponent.position);
-                for (Entity explosionEntity : this.entityFactory.createExplosions(positionComponent.position, 40, 5, 0.3f,  this.engine)) {
-                    this.engine.addEntity(explosionEntity);
+            // destroy animation on negative health
+            if (healthComponent.health <= 0L) {
+                PositionComponent positionComponent = this.positionComponentMapper.get(entity);
+                if (positionComponent != null) {
+                    this.backgroundTileHandler.destroyTile(positionComponent.position);
+                    for (Entity explosionEntity : this.entityFactory.createExplosions(positionComponent.position, 40, 5, 0.3f, this.engine)) {
+                        this.engine.addEntity(explosionEntity);
+                    }
                 }
             }
+            healthComponent.death = true;
+            this.engine.removeEntity(entity);
         }
     }
 }

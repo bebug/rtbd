@@ -6,7 +6,7 @@ import de.florianbuchner.trbd.entity.component.PositionComponent;
 
 public class SineMotionHandler implements MotionComponent.MotionHandler {
 
-    private static float FREQUENCY = 0.4F;
+    private static float FREQUENCY = 0.2F;
 
     private static float AMPLITUDE = 50F;
 

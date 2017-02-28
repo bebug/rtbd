@@ -15,7 +15,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
-public class GameEngine implements EnemySpawner, KillHandler {
+public class GameEngine implements EnemySpawner, KillHandler, DamageHandler {
 
     private final static float TOWER_LENGTH = 35F;
 
@@ -63,6 +63,7 @@ public class GameEngine implements EnemySpawner, KillHandler {
         // Data will be set by reference to gamedata
         this.gameData.towerPosition = this.positionComponentComponentMapper.get(towerEntity);
         this.gameData.towerAnimation = this.animationComponentComponentMapper.get(towerEntity);
+        this.gameData.healthComponent = this.healthComponentComponentMapper.get(towerEntity);
         MotionComponent towerMotionComponent = this.motionComponentComponentMapper.get(towerEntity);
         if (towerMotionComponent.handler instanceof CircleMotionHandler) {
             this.gameData.towerMotionHandler = (CircleMotionHandler)towerMotionComponent.handler;
@@ -78,7 +79,7 @@ public class GameEngine implements EnemySpawner, KillHandler {
         this.entityEngine.addSystem(new DamageSystem());
         this.entityEngine.addSystem(new TargetSystem(this.entityEngine));
         this.entityEngine.addSystem(new HealthSystem(this.entityFactory, this.entityEngine, this.backgroundComposer, this));
-        this.entityEngine.addSystem(new EnemySystem(this));
+        this.entityEngine.addSystem(new EnemySystem(this, this));
         this.entityEngine.addSystem(new DrawingSystem(this.resources, this.gameData));
     }
 
@@ -125,7 +126,7 @@ public class GameEngine implements EnemySpawner, KillHandler {
 
         switch (weaponType) {
             case GUN:
-                this.entityEngine.addEntity(this.entityFactory.createGun(this.createBulletStartPosition(shootFacing), new Vector2(shootFacing), this.entityEngine, new DamageHandler() {
+                this.entityEngine.addEntity(this.entityFactory.createGun(this.createBulletStartPosition(shootFacing), new Vector2(shootFacing), this.entityEngine, new CheckDamageHandler() {
                     @Override
                     public void dealDamage(Entity damageSource, List<Entity> entitiesToCheck) {
                         GameEngine.this.dealDamageGun(damageSource, entitiesToCheck);
@@ -135,7 +136,7 @@ public class GameEngine implements EnemySpawner, KillHandler {
                 this.gameData.towerAnimation.resetAnimation();
                 break;
             case LASER:
-                List<Entity> entities = this.entityFactory.createLaser(this.gameData.towerPosition.position, shootFacing, this.entityEngine, TOWER_LENGTH, new DamageHandler() {
+                List<Entity> entities = this.entityFactory.createLaser(this.gameData.towerPosition.position, shootFacing, this.entityEngine, TOWER_LENGTH, new CheckDamageHandler() {
                     @Override
                     public void dealDamage(Entity damageSource, List<Entity> entitiesToCheck) {
                         GameEngine.this.dealDamageLaser(damageSource, entitiesToCheck);
@@ -147,7 +148,7 @@ public class GameEngine implements EnemySpawner, KillHandler {
                 this.gameData.weaponEnergies.get(WeaponType.LASER).reset();
                 break;
             case BOMB:
-                this.entityEngine.addEntity(this.entityFactory.createBomb(this.createBulletStartPosition(shootFacing), new Vector2(shootFacing), this.entityEngine, new DamageHandler() {
+                this.entityEngine.addEntity(this.entityFactory.createBomb(this.createBulletStartPosition(shootFacing), new Vector2(shootFacing), this.entityEngine, new CheckDamageHandler() {
                     @Override
                     public void dealDamage(Entity damageSource, List<Entity> entitiesToCheck) {
                         GameEngine.this.dealDamageBomb(damageSource, entitiesToCheck);
@@ -157,7 +158,7 @@ public class GameEngine implements EnemySpawner, KillHandler {
                 this.gameData.towerAnimation.resetAnimation();
                 break;
             case BLAST:
-                entities = this.entityFactory.createBlast(new Vector2(0, 0), this.entityEngine, new DamageHandler() {
+                entities = this.entityFactory.createBlast(new Vector2(0, 0), this.entityEngine, new CheckDamageHandler() {
                     @Override
                     public void dealDamage(Entity damageSource, List<Entity> entitiesToCheck) {
                         GameEngine.this.dealDamageBlast(damageSource, entitiesToCheck);
@@ -324,16 +325,16 @@ public class GameEngine implements EnemySpawner, KillHandler {
 
     @Override
     public void spawnEnemies(int currentSize) {
-        if (currentSize <= 0) {
+        if (currentSize <= 2) {
             for (int i = 0; i < 3; i++) {
                 float rnd = this.randomizer.nextFloat();
                 final Entity entity;
                 if (rnd < 0.1f) {
-                    entity = this.entityFactory.createGreenScum(new Vector2(0, 230).setAngle(this.randomizer.nextFloat() * 360f), new Vector2(0, 0), 5F, 100L);
+                    entity = this.entityFactory.createGreenScum(new Vector2(0, 230).setAngle(this.randomizer.nextFloat() * 360f), new Vector2(0, 0), 8F, 20L);
                 } else if (rnd < 0.4) {
-                    entity = this.entityFactory.createBigFuck(new Vector2(0, 230).setAngle(this.randomizer.nextFloat() * 360f), new Vector2(0, 0), 5F, 100L);
+                    entity = this.entityFactory.createBigFuck(new Vector2(0, 230).setAngle(this.randomizer.nextFloat() * 360f), new Vector2(0, 0), 5F, 50L);
                 } else {
-                    entity = this.entityFactory.createRedDick(new Vector2(0, 230).setAngle(this.randomizer.nextFloat() * 360f), new Vector2(0, 0), 5F, 100L);
+                    entity = this.entityFactory.createRedDick(new Vector2(0, 230).setAngle(this.randomizer.nextFloat() * 360f), new Vector2(0, 0), 10F, 20L);
                 }
                 this.entityEngine.addEntity(entity);
                 this.entityEngine.addEntity(this.entityFactory.createTargetArrow(this.positionComponentComponentMapper.get(entity), this.healthComponentComponentMapper.get(entity)));
@@ -344,5 +345,13 @@ public class GameEngine implements EnemySpawner, KillHandler {
     @Override
     public void enemyKilled() {
 
+    }
+
+    @Override
+    public void doDamage(long damage) {
+        damage = (long)(((double)damage - (double)damage * 0.1d) + (double)damage * 0.2d * this.randomizer.nextDouble());
+        this.gameData.healthComponent.health -= damage;
+        this.entityEngine.addEntity(this.entityFactory.createDamageLabel(new Vector2(this.gameData.towerPosition.position).add(-15f, -15f).add(this.randomizer.nextFloat() * 30f,
+                this.randomizer.nextFloat() * 30f), damage, FontType.WARN, this.entityEngine));
     }
 }

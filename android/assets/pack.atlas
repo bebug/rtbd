@@ -63,8 +63,8 @@ powerups
 target-arrow
   rotate: false
   xy: 208, 228
-  size: 5, 8
-  orig: 5, 8
+  size: 7, 8
+  orig: 7, 8
   offset: 0, 0
   index: -1
 tower

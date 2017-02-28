@@ -112,11 +112,19 @@ public class DrawingSystem extends IteratingSystem {
         this.drawEntities(this.drawEntities.get(PositionComponent.PositionLayer.Explosion));
         this.drawEntities(this.drawEntities.get(PositionComponent.PositionLayer.Foreground));
 
-        // reset projection
-        this.resources.spriteBatch.setProjectionMatrix(this.resources.camera.combined);
+        if (this.resources.isDevice) {
+            this.drawHealthEntities(this.healthEntities, null);
+            this.drawText(this.textEntities, null);
+            // reset projection
+            this.resources.spriteBatch.setProjectionMatrix(this.resources.camera.combined);
+        }
+        else {
+            // reset projection
+            this.resources.spriteBatch.setProjectionMatrix(this.resources.camera.combined);
+            this.drawHealthEntities(this.healthEntities, rotationMatrix);
+            this.drawText(this.textEntities, rotationMatrix);
+        }
 
-        this.drawHealthEntities(this.healthEntities, rotationMatrix);
-        this.drawText(this.textEntities, rotationMatrix);
 
         this.resources.spriteBatch.end();
 
@@ -147,11 +155,11 @@ public class DrawingSystem extends IteratingSystem {
             TextComponent textComponent = this.textComponentComponentMapper.get(entity);
             PositionComponent positionComponent = this.positionComponentComponentMapper.get(entity);
             if (positionComponent.startPosition != null) {
-                Vector2 rotated = this.rotate(positionComponent.startPosition, rotationMatrix).sub(new Vector2(positionComponent.startPosition).sub(positionComponent.position));
+                Vector2 rotated = (rotationMatrix != null ? this.rotate(positionComponent.startPosition, rotationMatrix) : positionComponent.startPosition).sub(new Vector2(positionComponent.startPosition).sub(positionComponent.position));
                 this.resources.fonts.get(textComponent.fontType).draw(this.resources.spriteBatch, textComponent.text, rotated.x, rotated.y);
             }
             else {
-                Vector2 rotated = this.rotate(positionComponent.position, rotationMatrix);
+                Vector2 rotated = (rotationMatrix != null ? this.rotate(positionComponent.position, rotationMatrix) : positionComponent.position);
                 this.resources.fonts.get(textComponent.fontType).draw(this.resources.spriteBatch, textComponent.text, rotated.x, rotated.y);
             }
         }
@@ -174,13 +182,13 @@ public class DrawingSystem extends IteratingSystem {
                     drawingComponent.textureRegion.getRegionHeight(),
                     1,
                     1,
-                    drawingComponent.disableRotation ? positionComponent.facing.angle() - this.gameData.rotationAngle : positionComponent.facing.angle());
+                    (drawingComponent.disableRotation && !this.resources.isDevice) ? positionComponent.facing.angle() - this.gameData.rotationAngle : positionComponent.facing.angle());
         }
     }
 
     private void drawHealthEntities(final List<HealthDrawingContainer> drawEntities, Matrix4 rotationMatrix) {
         for (HealthDrawingContainer drawEntity : drawEntities) {
-            Vector2 rotated = this.rotate(drawEntity.positionComponent.position, rotationMatrix);
+            Vector2 rotated = rotationMatrix != null ? this.rotate(drawEntity.positionComponent.position, rotationMatrix) : drawEntity.positionComponent.position;
 
             this.resources.spriteBatch.draw(this.healthbarEmpty, rotated.x - this.healthbarEmpty.getRegionWidth() / 2,
                     rotated.y + drawEntity.healthComponent.yOffset);
