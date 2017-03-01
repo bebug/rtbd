@@ -40,8 +40,6 @@ public class Rtbd extends Game {
 
         this.resources.shapeRenderer = new ShapeRenderer();
         this.resources.shapeRenderer.setProjectionMatrix(this.resources.camera.combined);
-        this.resources.isDevice = Gdx.app.getType().equals(Application.ApplicationType.Android) ||
-                Gdx.app.getType().equals(Application.ApplicationType.iOS);
 
         this.setScreen(new GameScreen(this));
     }

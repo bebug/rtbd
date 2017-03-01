@@ -52,6 +52,14 @@ public class GameEngine implements EnemySpawner, KillHandler, DamageHandler {
         this.restart();
     }
 
+    public Resources getResources() {
+        return resources;
+    }
+
+    public GameData getGameData() {
+        return gameData;
+    }
+
     private void createBaseEntities() {
         // Add background entities
         for (Entity entity : this.backgroundComposer.getEntities()) {
@@ -173,18 +181,23 @@ public class GameEngine implements EnemySpawner, KillHandler, DamageHandler {
     }
 
     public void rotateScreen(float angle) {
-        this.setScreenRoation(this.gameData.rotationAngle + angle);
+        this.setScreenRoation(this.gameData.rotationAngle + angle, false);
     }
 
-    public void setScreenRoation(float angle) {
-        if (this.gameData.rotationAngle - angle > 180f) {
-            this.gameData.rotationAngle -= 360;
-        }
-        if (this.gameData.rotationAngle - angle < -180f) {
-            this.gameData.rotationAngle += 360;
-        }
+    public void setScreenRoation(float angle, final boolean smooth) {
+        if (smooth) {
+            if (this.gameData.rotationAngle - angle > 180f) {
+                this.gameData.rotationAngle -= 360;
+            }
+            if (this.gameData.rotationAngle - angle < -180f) {
+                this.gameData.rotationAngle += 360;
+            }
 
-        this.gameData.rotationAngle = this.gameData.rotationAngle * 0.8f + angle * 0.2f;
+            this.gameData.rotationAngle = this.gameData.rotationAngle * 0.8f + angle * 0.2f;
+        }
+        else {
+            this.gameData.rotationAngle = angle;
+        }
     }
 
     private void dealDamageGun(Entity damageSource, List<Entity> entitiesToCheck) {

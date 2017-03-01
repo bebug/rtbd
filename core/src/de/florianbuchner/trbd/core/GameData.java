@@ -27,4 +27,6 @@ public class GameData {
     public HealthComponent healthComponent;
 
     public float rotationAngle = 0f;
+
+    public boolean tendMotion;
 }

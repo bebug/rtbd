@@ -20,6 +20,4 @@ public class Resources {
     public TextureAtlas textureAtlas;
 
     public Map<FontType, BitmapFont> fonts = new HashMap<FontType, BitmapFont>();
-
-    public boolean isDevice;
 }

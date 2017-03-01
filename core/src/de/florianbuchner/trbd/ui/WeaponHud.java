@@ -95,7 +95,7 @@ public class WeaponHud {
 
     public void updateInput() {
         if (Gdx.input.isTouched()) {
-            Vector3 projection =this.resources.camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
+            Vector3 projection = this.resources.camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
 
             for (WeaponType weaponType : WeaponType.values()) {
                 if (this.weaponBounds.get(weaponType).contains(projection.x, projection.y)) {

@@ -112,7 +112,7 @@ public class DrawingSystem extends IteratingSystem {
         this.drawEntities(this.drawEntities.get(PositionComponent.PositionLayer.Explosion));
         this.drawEntities(this.drawEntities.get(PositionComponent.PositionLayer.Foreground));
 
-        if (this.resources.isDevice) {
+        if (this.gameData.tendMotion) {
             this.drawHealthEntities(this.healthEntities, null);
             this.drawText(this.textEntities, null);
             // reset projection
@@ -182,7 +182,7 @@ public class DrawingSystem extends IteratingSystem {
                     drawingComponent.textureRegion.getRegionHeight(),
                     1,
                     1,
-                    (drawingComponent.disableRotation && !this.resources.isDevice) ? positionComponent.facing.angle() - this.gameData.rotationAngle : positionComponent.facing.angle());
+                    (drawingComponent.disableRotation && !this.gameData.tendMotion) ? positionComponent.facing.angle() - this.gameData.rotationAngle : positionComponent.facing.angle());
         }
     }
 
