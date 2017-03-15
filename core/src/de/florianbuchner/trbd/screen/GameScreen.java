@@ -9,13 +9,15 @@ import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import de.florianbuchner.trbd.Rtbd;
+import de.florianbuchner.trbd.core.GameData;
 import de.florianbuchner.trbd.core.GameEngine;
+import de.florianbuchner.trbd.core.Resources;
 import de.florianbuchner.trbd.core.WeaponType;
 import de.florianbuchner.trbd.ui.WeaponHud;
 
 public class GameScreen implements Screen, WeaponHud.WeaponHudHandler, InputProcessor {
 
-    private Rtbd rtbd;
+    private ScreenHandler screenHandler;
     private WeaponHud weaponHud;
     private GameEngine gameEngine;
 
@@ -24,17 +26,22 @@ public class GameScreen implements Screen, WeaponHud.WeaponHudHandler, InputProc
     private boolean touchStarted = false;
     private int touchPointer = 0;
 
-    public GameScreen(Rtbd rtbd) {
-        this.rtbd = rtbd;
-        this.gameEngine = new GameEngine(rtbd.getGameData(), rtbd.getResources(), 25, 25);
-        this.weaponHud = new WeaponHud(rtbd.getGameData(), rtbd.getResources(), this);
+    private Resources resources;
+    private GameData gameData;
+
+    public GameScreen(ScreenHandler screenHandler, Resources resources, GameData gameData) {
+        this.screenHandler = screenHandler;
+        this.resources = resources;
+        this.gameData = gameData;
+        this.gameEngine = new GameEngine(gameData, resources, 25, 25);
+        this.weaponHud = new WeaponHud(gameData, resources, this);
         Gdx.input.setInputProcessor(this);
     }
 
     private void drawGUI() {
-        this.rtbd.getResources().spriteBatch.begin();
+        this.resources.spriteBatch.begin();
         this.weaponHud.drawHud();
-        this.rtbd.getResources().spriteBatch.end();
+        this.resources.spriteBatch.end();
     }
 
     @Override
@@ -44,24 +51,18 @@ public class GameScreen implements Screen, WeaponHud.WeaponHudHandler, InputProc
 
     @Override
     public void render(float delta) {
-        this.updateInputs(delta);
         this.gameEngine.update(delta);
         this.drawGUI();
-    }
 
-    private void updateInputs(float delta) {
-        if (!this.touchStarted) {
-            this.weaponHud.updateInput();
+        if (this.touchSpeed > 0) {
+            this.touchSpeed = Math.max(0, this.touchSpeed - delta * 10F);
+        }
+        else {
+            this.touchSpeed = Math.min(0, this.touchSpeed + delta * 10F);
         }
 
         if (!this.gameEngine.getGameData().tendMotion) {
             this.gameEngine.rotateScreen(this.touchSpeed);
-            if (this.touchSpeed > 0) {
-                this.touchSpeed = Math.max(0, this.touchSpeed - delta * 10F);
-            }
-            else {
-                this.touchSpeed = Math.min(0, this.touchSpeed + delta * 10F);
-            }
         }
         else if (Gdx.input.isPeripheralAvailable(Input.Peripheral.Accelerometer)) {
             if (Math.abs(Gdx.input.getAccelerometerX()) > 5f ||  Math.abs(Gdx.input.getAccelerometerY()) > 5f) {
@@ -70,10 +71,9 @@ public class GameScreen implements Screen, WeaponHud.WeaponHudHandler, InputProc
             }
         }
 
-        if(Gdx.input.isKeyPressed(Input.Keys.LEFT)){
+        if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
             this.gameEngine.rotateScreen(delta * 60f);
-        }
-        else if(Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
+        } else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
             this.gameEngine.rotateScreen(delta * -60f);
         }
     }
@@ -105,7 +105,9 @@ public class GameScreen implements Screen, WeaponHud.WeaponHudHandler, InputProc
 
     @Override
     public void weaponButtonClicked(WeaponType type) {
-        this.gameEngine.buttonPressed(type);
+        if (!this.touchStarted) {
+            this.gameEngine.buttonPressed(type);
+        }
     }
 
     @Override
@@ -125,15 +127,25 @@ public class GameScreen implements Screen, WeaponHud.WeaponHudHandler, InputProc
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        if (!this.touchStarted) {
-            Vector3 projection = this.gameEngine.getResources().camera.unproject(new Vector3(screenX, screenY, 0));
-            this.lastTouchPosition.set(projection.x, projection.y);
+        Vector3 projection = this.gameEngine.getResources().camera.unproject(new Vector3(screenX, screenY, 0));
 
-            if (Math.abs(projection.x) < this.gameEngine.getGameData().width / 2F - 60F) {
-                this.touchSpeed = 0F;
-                this.touchStarted = true;
-                this.touchPointer = button;
-                return true;
+        if (this.resources.menuManager.menuOpen()) {
+            this.resources.menuManager.touchDown(projection.x, projection.y);
+        }
+        else {
+            if (!this.touchStarted) {
+                this.weaponHud.updateInput(projection.x, projection.y);
+            }
+
+            if (!this.touchStarted) {
+                this.lastTouchPosition.set(projection.x, projection.y);
+
+                if (Math.abs(projection.x) < this.gameEngine.getGameData().width / 2F - 60F) {
+                    this.touchSpeed = 0F;
+                    this.touchStarted = true;
+                    this.touchPointer = button;
+                    return true;
+                }
             }
         }
         return false;

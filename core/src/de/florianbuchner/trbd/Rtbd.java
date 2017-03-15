@@ -1,9 +1,7 @@
 package de.florianbuchner.trbd;
 
-import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -13,9 +11,13 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import de.florianbuchner.trbd.core.FontType;
 import de.florianbuchner.trbd.core.GameData;
 import de.florianbuchner.trbd.core.Resources;
+import de.florianbuchner.trbd.menu.MenuManager;
+import de.florianbuchner.trbd.menu.PauseMenu;
 import de.florianbuchner.trbd.screen.GameScreen;
+import de.florianbuchner.trbd.screen.MainScreen;
+import de.florianbuchner.trbd.screen.ScreenHandler;
 
-public class Rtbd extends Game {
+public class Rtbd extends Game implements ScreenHandler {
 
     private static int WIDTH = 400;
 
@@ -29,7 +31,7 @@ public class Rtbd extends Game {
     public void create() {
         this.resources.spriteBatch = new SpriteBatch();
         this.gameData.width = WIDTH;
-        this.gameData.height = (int)(WIDTH / RATIO);
+        this.gameData.height = (int) (WIDTH / RATIO);
         this.resources.camera = new OrthographicCamera(this.gameData.width, this.gameData.height);
         this.resources.spriteBatch.setProjectionMatrix(this.resources.camera.combined);
         this.resources.textureAtlas = new TextureAtlas(Gdx.files.internal("pack.atlas"));
@@ -41,7 +43,9 @@ public class Rtbd extends Game {
         this.resources.shapeRenderer = new ShapeRenderer();
         this.resources.shapeRenderer.setProjectionMatrix(this.resources.camera.combined);
 
-        this.setScreen(new GameScreen(this));
+        this.resources.menuManager = new MenuManager(this.resources);
+
+        this.setScreen(new MainScreen(this.resources, this.gameData, this));
     }
 
     @Override
@@ -51,6 +55,7 @@ public class Rtbd extends Game {
         gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         super.render();
+        this.resources.menuManager.render(Gdx.graphics.getDeltaTime());
     }
 
     @Override

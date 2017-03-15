@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import de.florianbuchner.trbd.menu.MenuManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,4 +21,6 @@ public class Resources {
     public TextureAtlas textureAtlas;
 
     public Map<FontType, BitmapFont> fonts = new HashMap<FontType, BitmapFont>();
+
+    public MenuManager menuManager;
 }
