@@ -1,22 +1,31 @@
 package de.florianbuchner.trbd.menu;
 
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import de.florianbuchner.trbd.core.GameData;
 import de.florianbuchner.trbd.core.Resources;
 
 public class MainMenu extends AbstractMenu {
 
-    public MainMenu(GameData gameData, Resources resources) {
-        super(100, 120, gameData, resources);
+    private MainMenuHandler handler;
+
+    public MainMenu(GameData gameData, Resources resources, MainMenuHandler handler) {
+        super(120, 40, gameData, resources);
+        this.handler = handler;
+
+        this.addMenuButton(new MenuButton("START GAME", -60, -20, 120, 40, new ActionHandler() {
+            @Override
+            public void doAction() {
+                MainMenu.this.setMenuCloseHandler(new MenuCloseHandler() {
+                    @Override
+                    public void onMenuClosed(Menu menu) {
+                        MainMenu.this.handler.onStartGame();
+                    }
+                });
+                MainMenu.this.close();
+            }
+        }));
     }
 
-    @Override
-    public void renderMenu(SpriteBatch spriteBatch, float delta) {
-
-    }
-
-    @Override
-    public void processInput() {
-
+    public interface MainMenuHandler {
+        void onStartGame();
     }
 }

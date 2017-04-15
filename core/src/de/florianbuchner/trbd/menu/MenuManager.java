@@ -1,7 +1,5 @@
 package de.florianbuchner.trbd.menu;
 
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.utils.OrderedSet;
 import de.florianbuchner.trbd.core.Resources;
 
 import java.util.LinkedList;
@@ -34,8 +32,6 @@ public class MenuManager implements MenuCloseHandler {
             menu.render(this.resources.spriteBatch, deltaTime);
         }
         this.resources.spriteBatch.end();
-
-        this.menus.getLast().processInput();
     }
 
     /**
@@ -52,13 +48,12 @@ public class MenuManager implements MenuCloseHandler {
         }
     }
 
+    public void closeAll() {
+        this.menus.clear();
+    }
+
     public boolean menuOpen() {
         return !this.menus.isEmpty();
     }
 
-    public void touchDown(float x, float y) {
-        if (!this.menus.isEmpty()) {
-            this.menus.getLast().touchDown(x, y);
-        }
-    }
 }

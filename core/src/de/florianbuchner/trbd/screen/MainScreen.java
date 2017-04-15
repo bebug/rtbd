@@ -5,7 +5,7 @@ import de.florianbuchner.trbd.core.GameData;
 import de.florianbuchner.trbd.core.Resources;
 import de.florianbuchner.trbd.menu.MainMenu;
 
-public class MainScreen implements Screen {
+public class MainScreen implements Screen, MainMenu.MainMenuHandler {
 
     private Resources resources;
 
@@ -21,7 +21,7 @@ public class MainScreen implements Screen {
 
     @Override
     public void show() {
-        this.resources.menuManager.add(new MainMenu(this.gameData, this.resources));
+        this.resources.menuManager.add(new MainMenu(this.gameData, this.resources, this));
     }
 
     @Override
@@ -53,4 +53,12 @@ public class MainScreen implements Screen {
     public void dispose() {
 
     }
+
+    @Override
+    public void onStartGame() {
+        this.resources.menuManager.closeAll();
+        this.screenHandler.setScreen(new GameScreen(this.screenHandler, this.resources, this.gameData));
+    }
+
+
 }

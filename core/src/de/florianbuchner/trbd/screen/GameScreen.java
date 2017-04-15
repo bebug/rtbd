@@ -129,23 +129,18 @@ public class GameScreen implements Screen, WeaponHud.WeaponHudHandler, InputProc
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         Vector3 projection = this.gameEngine.getResources().camera.unproject(new Vector3(screenX, screenY, 0));
 
-        if (this.resources.menuManager.menuOpen()) {
-            this.resources.menuManager.touchDown(projection.x, projection.y);
+        if (!this.touchStarted) {
+            this.weaponHud.updateInput(projection.x, projection.y);
         }
-        else {
-            if (!this.touchStarted) {
-                this.weaponHud.updateInput(projection.x, projection.y);
-            }
 
-            if (!this.touchStarted) {
-                this.lastTouchPosition.set(projection.x, projection.y);
+        if (!this.touchStarted) {
+            this.lastTouchPosition.set(projection.x, projection.y);
 
-                if (Math.abs(projection.x) < this.gameEngine.getGameData().width / 2F - 60F) {
-                    this.touchSpeed = 0F;
-                    this.touchStarted = true;
-                    this.touchPointer = button;
-                    return true;
-                }
+            if (Math.abs(projection.x) < this.gameEngine.getGameData().width / 2F - 60F) {
+                this.touchSpeed = 0F;
+                this.touchStarted = true;
+                this.touchPointer = button;
+                return true;
             }
         }
         return false;

@@ -15,8 +15,4 @@ public class PauseMenu extends AbstractMenu {
 
     }
 
-    @Override
-    public void processInput() {
-
-    }
 }

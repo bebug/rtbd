@@ -10,8 +10,14 @@ import java.util.Map;
 
 public class GameData {
 
+    /**
+     * Screen width
+     */
     public int width;
 
+    /**
+     * Screen height
+     */
     public int height;
 
     public Map<WeaponType, WeaponEnergie> weaponEnergies = new HashMap<WeaponType, WeaponEnergie>(WeaponType.values().length);

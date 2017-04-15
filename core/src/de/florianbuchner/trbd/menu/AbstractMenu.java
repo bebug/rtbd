@@ -1,14 +1,20 @@
 package de.florianbuchner.trbd.menu;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector3;
+import de.florianbuchner.trbd.core.FontType;
 import de.florianbuchner.trbd.core.GameData;
 import de.florianbuchner.trbd.core.Resources;
 
 import java.util.LinkedList;
+import java.util.List;
 
-public abstract class AbstractMenu implements Menu {
+public abstract class AbstractMenu implements Menu, InputProcessor {
 
     protected float time = 0F;
 
@@ -46,7 +52,13 @@ public abstract class AbstractMenu implements Menu {
 
     private MenuCloseHandler menuCloseHandler;
 
-    private LinkedList<MenuClickComponent> clickComponents = new LinkedList<MenuClickComponent>();
+    private List<MenuClickComponent> clickComponents = new LinkedList<MenuClickComponent>();
+
+    private InputProcessor oldInputProcessor;
+
+    private ActionHandler closeAction;
+
+    private List<MenuButton> menuButtons = new LinkedList<MenuButton>();
 
     public AbstractMenu(int width, int height, GameData gameData, Resources resources) {
         this.width = width;
@@ -66,7 +78,8 @@ public abstract class AbstractMenu implements Menu {
         background = new TextureRegion(menuSprite, 6, 7, 6, 6);
 
         this.opening = true;
-
+        this.oldInputProcessor = Gdx.input.getInputProcessor();
+        Gdx.input.setInputProcessor(this);
     }
 
     public void addClickComponent(MenuClickComponent menuClickComponent) {
@@ -77,9 +90,36 @@ public abstract class AbstractMenu implements Menu {
         this.menuCloseHandler = menuCloseHandler;
     }
 
+    public void close(ActionHandler closeAction) {
+        this.closeAction = closeAction;
+        this.close();
+    }
+
+    @Override
     public void close() {
         this.closing = true;
         this.animationTime = 0F;
+    }
+
+    private void onClosed() {
+        Gdx.input.setInputProcessor(this.oldInputProcessor);
+        this.menuCloseHandler.onMenuClosed(this);
+        if (this.closeAction != null) {
+            this.closeAction.doAction();
+        }
+    }
+
+    protected boolean isIdle() {
+        return this.opening || this.closing || this.buttonsIdle();
+    }
+
+    private boolean buttonsIdle() {
+        for (MenuButton menuButton : menuButtons) {
+            if (menuButton.isIdle()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -88,18 +128,18 @@ public abstract class AbstractMenu implements Menu {
 
         if (this.opening) {
             this.animationTime += delta;
-            this.renderFrame(spriteBatch, (int) Math.min(this.width, 30F + (this.animationTime * 3 * this.width - 30F)),
-                    (int) Math.min(this.height, 30F + (this.animationTime * 3 * this.height - 30F)));
-            if (this.animationTime > 1F) {
+            this.renderFrame(spriteBatch, (int) Math.min(this.width, 30F + ((this.animationTime * 3 * this.width) - 30F)),
+                    (int) Math.min(this.height, 30F + ((this.animationTime * 3 * this.height) - 30F)));
+            if (this.animationTime > 0.3F) {
                 this.opening = false;
             }
         } else if (closing) {
             this.animationTime += delta;
-            this.renderFrame(spriteBatch, (int) Math.max(30F, this.width - this.width * (1F - this.animationTime * 3)),
-                    (int) Math.max(30F, this.height - this.height * (1F - this.animationTime * 3)));
-            if (this.animationTime > 1F) {
+            this.renderFrame(spriteBatch, (int) Math.max(30F, this.width - (this.animationTime * 3 * (this.width - 30))),
+                    (int) Math.max(30F, this.height - (this.animationTime * 3 * (this.height - 30))));
+            if (this.animationTime > 0.3F) {
                 if (this.menuCloseHandler != null) {
-                    this.menuCloseHandler.onMenuClosed(this);
+                   this.onClosed();
                 }
             }
         } else {
@@ -108,7 +148,12 @@ public abstract class AbstractMenu implements Menu {
         }
     }
 
-    public abstract void renderMenu(SpriteBatch spriteBatch, float delta);
+    protected void renderMenu(SpriteBatch spriteBatch, float delta) {
+        BitmapFont font = this.resources.fonts.get(FontType.NORMAL);
+        for (MenuButton menuButton : menuButtons) {
+            menuButton.render(this.resources.spriteBatch, font, delta);
+        }
+    }
 
     protected void renderFrame(SpriteBatch spriteBatch, int width, int height) {
         float startX = -width / 2F;
@@ -142,13 +187,63 @@ public abstract class AbstractMenu implements Menu {
         }
     }
 
-    @Override
-    public void touchDown(float x, float y) {
-        for (final MenuClickComponent clickComponent : clickComponents) {
-            if (clickComponent.rectangle.contains(x, y)) {
-                clickComponent.menuClickHanlder.onClick();
-            }
-        }
+    protected void addMenuButton(MenuButton menuButton) {
+        this.menuButtons.add(menuButton);
     }
 
+    @Override
+    public boolean keyDown(int keycode) {
+        return false;
+    }
+
+    @Override
+    public boolean keyUp(int keycode) {
+        return false;
+    }
+
+    @Override
+    public boolean keyTyped(char character) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        Vector3 projection = this.resources.camera.unproject(new Vector3(screenX, screenY, 0));
+
+        if (!this.isIdle()) {
+            for (MenuButton menuButton : menuButtons) {
+                if (menuButton.processInput(projection.x, projection.y)) {
+                    break;
+                }
+            }
+
+            for (final MenuClickComponent clickComponent : clickComponents) {
+                if (clickComponent.rectangle.contains(projection.x, projection.y)) {
+                    clickComponent.menuClickHanlder.onClick();
+                }
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+        return false;
+    }
+
+    @Override
+    public boolean mouseMoved(int screenX, int screenY) {
+        return false;
+    }
+
+    @Override
+    public boolean scrolled(int amount) {
+        return false;
+    }
 }
