@@ -50,13 +50,19 @@ public abstract class AbstractMenu implements Menu, InputProcessor {
 
     private TextureRegion background;
 
+    /**
+     * Used by the MenuManager to remove menu from active list
+     */
     private MenuCloseHandler menuCloseHandler;
+
+    /**
+     * Used if special action is necessary after close
+     */
+    private ActionHandler closeActionHandler;
 
     private List<MenuClickComponent> clickComponents = new LinkedList<MenuClickComponent>();
 
     private InputProcessor oldInputProcessor;
-
-    private ActionHandler closeAction;
 
     private List<MenuButton> menuButtons = new LinkedList<MenuButton>();
 
@@ -90,22 +96,24 @@ public abstract class AbstractMenu implements Menu, InputProcessor {
         this.menuCloseHandler = menuCloseHandler;
     }
 
-    public void close(ActionHandler closeAction) {
-        this.closeAction = closeAction;
-        this.close();
-    }
-
     @Override
     public void close() {
         this.closing = true;
         this.animationTime = 0F;
     }
 
+    @Override
+    public void close(ActionHandler closeActionHandlers) {
+        this.closeActionHandler = closeActionHandlers;
+        this.close();
+    }
+
     private void onClosed() {
         Gdx.input.setInputProcessor(this.oldInputProcessor);
         this.menuCloseHandler.onMenuClosed(this);
-        if (this.closeAction != null) {
-            this.closeAction.doAction();
+
+        if (this.closeActionHandler != null) {
+            this.closeActionHandler.doAction();
         }
     }
 

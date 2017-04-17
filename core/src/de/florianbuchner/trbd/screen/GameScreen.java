@@ -13,6 +13,7 @@ import de.florianbuchner.trbd.core.GameData;
 import de.florianbuchner.trbd.core.GameEngine;
 import de.florianbuchner.trbd.core.Resources;
 import de.florianbuchner.trbd.core.WeaponType;
+import de.florianbuchner.trbd.menu.PauseMenu;
 import de.florianbuchner.trbd.ui.WeaponHud;
 
 public class GameScreen implements Screen, WeaponHud.WeaponHudHandler, InputProcessor {
@@ -51,6 +52,10 @@ public class GameScreen implements Screen, WeaponHud.WeaponHudHandler, InputProc
 
     @Override
     public void render(float delta) {
+        if (this.resources.menuManager.menuOpen()) {
+            delta = 0F;
+        }
+
         this.gameEngine.update(delta);
         this.drawGUI();
 
@@ -112,7 +117,20 @@ public class GameScreen implements Screen, WeaponHud.WeaponHudHandler, InputProc
 
     @Override
     public boolean keyDown(int keycode) {
+        if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
+            this.resources.menuManager.add(new PauseMenu(this.gameData, this.resources, new PauseMenu.PauseMenuHandler() {
+                @Override
+                public void onExitGame() {
+                    GameScreen.this.exit();
+                }
+            }));
+        }
         return false;
+    }
+
+    private void exit() {
+        this.resources.menuManager.clear();
+        this.screenHandler.setScreen(new MainScreen(this.resources, this.gameData, this.screenHandler));
     }
 
     @Override

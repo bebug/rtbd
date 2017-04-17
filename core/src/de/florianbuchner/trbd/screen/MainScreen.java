@@ -56,7 +56,7 @@ public class MainScreen implements Screen, MainMenu.MainMenuHandler {
 
     @Override
     public void onStartGame() {
-        this.resources.menuManager.closeAll();
+        this.resources.menuManager.clear();
         this.screenHandler.setScreen(new GameScreen(this.screenHandler, this.resources, this.gameData));
     }
 
