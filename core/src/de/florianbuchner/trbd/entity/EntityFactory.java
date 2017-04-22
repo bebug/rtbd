@@ -6,11 +6,9 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
-import de.florianbuchner.trbd.core.CheckDamageHandler;
-import de.florianbuchner.trbd.core.EnemyType;
-import de.florianbuchner.trbd.core.FontType;
-import de.florianbuchner.trbd.core.Resources;
+import de.florianbuchner.trbd.core.*;
 import de.florianbuchner.trbd.entity.component.*;
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,6 +22,7 @@ public class EntityFactory {
     private TextureRegion foundationTexture;
     private Animation towerAnimation;
     private TextureRegion gunTextureRegion;
+    private Map<CrystalType, TextureRegion> crystalTextureRegions = new HashMap<CrystalType, TextureRegion>(CrystalType.values().length);
     private TextureRegion bombTextureRegion;
     private TextureRegion[] explosionRegions;
     private Animation laserAnimation;
@@ -37,7 +36,11 @@ public class EntityFactory {
         TextureRegion bulletsTexture = resources.textureAtlas.createSprite("bullets");
         TextureRegion enemiesTexture = resources.textureAtlas.createSprite("enemies");
         TextureRegion towerTexture = resources.textureAtlas.createSprite("tower");
+        TextureRegion crystalTexture = resources.textureAtlas.createSprite("crystal");
 
+        this.crystalTextureRegions.put(CrystalType.YELLOW, new TextureRegion(crystalTexture, 0,0, 18, 18));
+        this.crystalTextureRegions.put(CrystalType.VIOLET, new TextureRegion(crystalTexture, 19,0, 18, 18));
+        this.crystalTextureRegions.put(CrystalType.RED, new TextureRegion(crystalTexture, 38,0, 18, 18));
         this.bombTextureRegion = new TextureRegion(bulletsTexture, 0, 3, 13, 8);
         this.gunTextureRegion = new TextureRegion(bulletsTexture, 14, 3, 9, 9);
         this.laserAnimation = new Animation(0.1F,
@@ -134,7 +137,7 @@ public class EntityFactory {
 
     public Entity createGun(Vector2 startPosition, Vector2 facing, final Engine engine, final CheckDamageHandler checkDamageHandler) {
         final Entity entity = new Entity();
-        PositionComponent positionComponent = new PositionComponent(startPosition, facing.nor(), PositionComponent.PositionLayer.Explosion);
+        PositionComponent positionComponent = new PositionComponent(startPosition, facing, PositionComponent.PositionLayer.Explosion);
         positionComponent.body = new Polygon(new float[]{-5f, -5f, -5f, 5f, 5f, 5f, 5f, -5f});
         entity.add(positionComponent);
         entity.add(new DrawingComponent(this.gunTextureRegion));
@@ -156,7 +159,7 @@ public class EntityFactory {
             final Entity entity = new Entity();
             float centerDistance = distance + 8 + i * 22;
             entity.add(new PositionComponent(new Vector2(positionReference.x + centerDistance * facingReference.x,
-                    positionReference.y + centerDistance * facingReference.y), new Vector2(facingReference), PositionComponent.PositionLayer.Explosion));
+                    positionReference.y + centerDistance * facingReference.y), facingReference, PositionComponent.PositionLayer.Explosion));
             entity.add(new MotionComponent(new ReferenceMotionHandler(positionReference, facingReference, centerDistance)));
             entity.add(new AnimationComponent(this.laserAnimation, true, i % this.laserAnimation.getKeyFrames().length * this.laserAnimation.getFrameDuration()));
             entity.add(new DelayComponent(new DelayComponent.DelayHandler() {
@@ -174,7 +177,7 @@ public class EntityFactory {
 
     public Entity createBomb(Vector2 startPosition, Vector2 facing, final Engine engine, final CheckDamageHandler checkDamageHandler) {
         final Entity entity = new Entity();
-        PositionComponent positionComponent = new PositionComponent(startPosition, facing.nor(), PositionComponent.PositionLayer.Explosion);
+        PositionComponent positionComponent = new PositionComponent(startPosition, facing, PositionComponent.PositionLayer.Explosion);
         positionComponent.body = new Polygon(new float[]{-7f, -5f, -7f, 5f, 7f, 5f, 7f, -5f});
         entity.add(positionComponent);
         entity.add(new DrawingComponent(this.bombTextureRegion));
@@ -219,13 +222,13 @@ public class EntityFactory {
         return entities;
     }
 
-    public Entity createBigFuck(Vector2 startPosition, Vector2 endPosition, float speed, long livepoints) {
-        return this.createLineMotionEnemy(startPosition, endPosition, speed, livepoints, EnemyType.BIG_FUCK);
+    public Entity createBigFuck(Vector2 startPosition, Vector2 endPosition, float speed, long health) {
+        return this.createLineMotionEnemy(startPosition, endPosition, speed, health, EnemyType.BIG_FUCK);
 
     }
 
-    public Entity createRedDick(Vector2 startPosition, Vector2 endPosition, float speed, long livepoints) {
-        return this.createLineMotionEnemy(startPosition, endPosition, speed, livepoints, EnemyType.RED_DICK);
+    public Entity createRedDick(Vector2 startPosition, Vector2 endPosition, float speed, long health) {
+        return this.createLineMotionEnemy(startPosition, endPosition, speed, health, EnemyType.RED_DICK);
     }
 
     private Entity createLineMotionEnemy(Vector2 startPosition, Vector2 endPosition, float speed, long health, EnemyType enemyType) {
@@ -234,7 +237,7 @@ public class EntityFactory {
         animationComponent.textureOffset = new Vector2(-35, -12);
         entity.add(animationComponent);
         entity.add(new MotionComponent(new LineMotionHandler(speed)));
-        PositionComponent positionComponent = new PositionComponent(new Vector2(startPosition), endPosition.sub(startPosition).nor(), PositionComponent.PositionLayer.Enemy);
+        PositionComponent positionComponent = new PositionComponent(startPosition, endPosition.sub(startPosition).nor(), PositionComponent.PositionLayer.Enemy);
         switch (enemyType) {
             case RED_DICK:
                 positionComponent.body = new Polygon(new float[] {
@@ -261,13 +264,31 @@ public class EntityFactory {
         return entity;
     }
 
+    public Entity createCrystal(Vector2 position, long health, CrystalType crystalType) {
+        final Entity entity = new Entity();
+
+        entity.add(new DrawingComponent(this.crystalTextureRegions.get(crystalType)));
+        entity.add(new HealthComponent(health, 16));
+        entity.add(new CrystalComponent());
+        PositionComponent positionComponent = new PositionComponent(position, new Vector2(), PositionComponent.PositionLayer.Enemy);
+        positionComponent.body = new Polygon(new float[]{
+                -10f, 10f,
+                10f, 10f,
+                10f, -10f,
+                -10f, -10f
+        });
+        entity.add(positionComponent);
+
+        return entity;
+    }
+
     public Entity createGreenScum(Vector2 startPosition, Vector2 endPosition, float speed, long health) {
         final Entity entity = new Entity();
         final AnimationComponent animationComponent = new AnimationComponent(this.enemyAnimations.get(EnemyType.GREEN_SCUM), true);
         animationComponent.textureOffset = new Vector2(-35, -15);
         entity.add(animationComponent);
         entity.add(new MotionComponent(new SineMotionHandler(speed, endPosition.sub(startPosition).nor(), new Vector2(startPosition))));
-        PositionComponent positionComponent = new PositionComponent(new Vector2(startPosition), new Vector2(0, 0), PositionComponent.PositionLayer.Enemy);
+        PositionComponent positionComponent = new PositionComponent(startPosition, new Vector2(0, 0), PositionComponent.PositionLayer.Enemy);
         positionComponent.body = new Polygon(new float[]{
                 -15f, -0f,
                 0f, 15f,

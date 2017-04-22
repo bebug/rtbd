@@ -18,6 +18,13 @@ bullets
   orig: 46, 30
   offset: 0, 0
   index: -1
+crystal
+  rotate: false
+  xy: 159, 88
+  size: 57, 18
+  orig: 57, 18
+  offset: 0, 0
+  index: -1
 enemies
   rotate: false
   xy: 232, 81

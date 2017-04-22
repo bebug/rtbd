@@ -22,9 +22,9 @@ public class PositionComponent implements Component {
     }
 
     public PositionComponent(Vector2 position, Vector2 facing, PositionLayer positionLayer) {
-        this.position = position;
+        this.position = new Vector2(position);
         this.lastPosition = new Vector2(position);
-        this.facing = facing;
+        this.facing = facing.nor();
         this.positionLayer = positionLayer;
     }
 }

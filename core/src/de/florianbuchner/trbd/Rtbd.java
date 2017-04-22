@@ -46,6 +46,8 @@ public class Rtbd extends Game implements ScreenHandler {
         this.resources.menuManager = new MenuManager(this.resources);
 
         this.setScreen(new MainScreen(this.resources, this.gameData, this));
+
+        Gdx.input.setCatchBackKey(true);
     }
 
     @Override

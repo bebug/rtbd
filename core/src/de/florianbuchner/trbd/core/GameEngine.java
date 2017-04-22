@@ -356,8 +356,8 @@ public class GameEngine implements EnemySpawner, KillHandler, DamageHandler {
     }
 
     @Override
-    public void enemyKilled() {
-
+    public void enemyKilled(Vector2 position) {
+        this.entityEngine.addEntity(this.entityFactory.createCrystal(position, 100, CrystalType.YELLOW));
     }
 
     @Override

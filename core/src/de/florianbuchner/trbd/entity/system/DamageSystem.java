@@ -5,6 +5,7 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.systems.IteratingSystem;
 import com.badlogic.gdx.math.Vector2;
+import de.florianbuchner.trbd.entity.component.CrystalComponent;
 import de.florianbuchner.trbd.entity.component.DamageComponent;
 import de.florianbuchner.trbd.entity.component.EnemyComponent;
 import de.florianbuchner.trbd.entity.component.PositionComponent;
@@ -17,16 +18,19 @@ public class DamageSystem extends IteratingSystem {
     private ComponentMapper<EnemyComponent> enemyComponentComponentMapper;
     private ComponentMapper<DamageComponent> damageComponentComponentMapper;
     private ComponentMapper<PositionComponent> positionComponentComponentMapper;
+    private ComponentMapper<CrystalComponent> crystalComponentComponentMapper;
 
     private List<Entity> enemyEntities = new LinkedList<Entity>();
     private List<Entity> damageEntities = new LinkedList<Entity>();
+    private List<Entity> crystalEntities = new LinkedList<Entity>();
 
     public DamageSystem() {
-        super(Family.one(EnemyComponent.class, DamageComponent.class).get());
+        super(Family.one(EnemyComponent.class, DamageComponent.class, CrystalComponent.class).get());
 
         this.enemyComponentComponentMapper = ComponentMapper.getFor(EnemyComponent.class);
         this.damageComponentComponentMapper = ComponentMapper.getFor(DamageComponent.class);
         this.positionComponentComponentMapper = ComponentMapper.getFor(PositionComponent.class);
+        this.crystalComponentComponentMapper = ComponentMapper.getFor(CrystalComponent.class);
     }
 
     @Override
@@ -37,17 +41,22 @@ public class DamageSystem extends IteratingSystem {
         if (this.damageComponentComponentMapper.has(entity)) {
             this.damageEntities.add(entity);
         }
+        if (this.crystalComponentComponentMapper.has(entity)) {
+            this.crystalEntities.add(entity);
+        }
     }
 
     @Override
     public void update(float deltaTime) {
         this.enemyEntities.clear();
         this.damageEntities.clear();
+        this.crystalEntities.clear();
         super.update(deltaTime);
 
         for (Entity damageEntity : damageEntities) {
             DamageComponent damageComponent =  this.damageComponentComponentMapper.get(damageEntity);
             damageComponent.checkDamageHandler.dealDamage(damageEntity, this.enemyEntities);
+            damageComponent.checkDamageHandler.dealDamage(damageEntity, this.crystalEntities);
 
             PositionComponent positionComponent = this.positionComponentComponentMapper.get(damageEntity);
             if (positionComponent != null) {
