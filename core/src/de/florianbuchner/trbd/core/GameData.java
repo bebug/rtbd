@@ -22,6 +22,10 @@ public class GameData {
 
     public Map<WeaponType, WeaponEnergie> weaponEnergies = new HashMap<WeaponType, WeaponEnergie>(WeaponType.values().length);
 
+    public long score;
+
+    public long crystals;
+
     public int level;
 
     public PositionComponent towerPosition;

@@ -60,6 +60,13 @@ menu
   orig: 32, 133
   offset: 0, 0
   index: -1
+mini-icons
+  rotate: false
+  xy: 481, 224
+  size: 24, 12
+  orig: 24, 12
+  offset: 0, 0
+  index: -1
 powerups
   rotate: false
   xy: 2, 79

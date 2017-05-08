@@ -1,19 +1,16 @@
 package de.florianbuchner.trbd.ui;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector3;
-import de.florianbuchner.trbd.core.GameData;
-import de.florianbuchner.trbd.core.Resources;
-import de.florianbuchner.trbd.core.WeaponType;
+import de.florianbuchner.trbd.core.*;
 
+import java.text.DecimalFormat;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
-public class WeaponHud {
+public class GameHud {
 
     public interface WeaponHudHandler {
         void weaponButtonClicked(WeaponType type);
@@ -31,17 +28,28 @@ public class WeaponHud {
 
     private WeaponHudHandler weaponHudHandler;
 
-    public WeaponHud(GameData gameData, Resources resources, WeaponHudHandler weaponHudHandler) {
+    private GameEngine gameEngine;
+
+    private TextureRegion miniScoreIcon;
+
+    private TextureRegion miniCrystalIcon;
+
+    public GameHud(GameData gameData, Resources resources, WeaponHudHandler weaponHudHandler, GameEngine gameEngine) {
         this.gameData = gameData;
         this.weaponHudHandler = weaponHudHandler;
         this.resources = resources;
+        this.gameEngine = gameEngine;
 
         this.createWeaponButtons();
 
-        this.weaponBounds.put(WeaponType.GUN, new Rectangle(-this.gameData.width / 2F , -gameData.height / 2F, WeaponHud.BUTTON_SIZE, WeaponHud.BUTTON_SIZE));
-        this.weaponBounds.put(WeaponType.LASER, new Rectangle(this.gameData.width / 2F - WeaponHud.BUTTON_SIZE, -gameData.height / 2F, WeaponHud.BUTTON_SIZE, WeaponHud.BUTTON_SIZE));
-        this.weaponBounds.put(WeaponType.BLAST, new Rectangle(-this.gameData.width / 2F , gameData.height / 2F - WeaponHud.BUTTON_SIZE, WeaponHud.BUTTON_SIZE, WeaponHud.BUTTON_SIZE));
-        this.weaponBounds.put(WeaponType.BOMB, new Rectangle(this.gameData.width / 2F - WeaponHud.BUTTON_SIZE, gameData.height / 2F - WeaponHud.BUTTON_SIZE, WeaponHud.BUTTON_SIZE, WeaponHud.BUTTON_SIZE));
+        this.weaponBounds.put(WeaponType.GUN, new Rectangle(-this.gameData.width / 2F , -gameData.height / 2F, GameHud.BUTTON_SIZE, GameHud.BUTTON_SIZE));
+        this.weaponBounds.put(WeaponType.LASER, new Rectangle(this.gameData.width / 2F - GameHud.BUTTON_SIZE, -gameData.height / 2F, GameHud.BUTTON_SIZE, GameHud.BUTTON_SIZE));
+        this.weaponBounds.put(WeaponType.BLAST, new Rectangle(-this.gameData.width / 2F , gameData.height / 2F - GameHud.BUTTON_SIZE, GameHud.BUTTON_SIZE, GameHud.BUTTON_SIZE));
+        this.weaponBounds.put(WeaponType.BOMB, new Rectangle(this.gameData.width / 2F - GameHud.BUTTON_SIZE, gameData.height / 2F - GameHud.BUTTON_SIZE, GameHud.BUTTON_SIZE, GameHud.BUTTON_SIZE));
+
+        TextureRegion miniIconsTexture = this.resources.textureAtlas.createSprite("mini-icons");
+        this.miniCrystalIcon = new TextureRegion(miniIconsTexture, 12, 0, 12, 12);
+        this.miniScoreIcon = new TextureRegion(miniIconsTexture, 0, 0, 12, 12);
     }
 
     private void createWeaponButtons() {
@@ -91,6 +99,22 @@ public class WeaponHud {
                 weaponTypeWeaponButtonEntry.getValue().draw(this.resources.spriteBatch, this.gameData.weaponEnergies.get(weaponTypeWeaponButtonEntry.getKey()).getEnergy());
             }
         }
+
+        this.drawPoints();
+        this.drawCrystals();
+    }
+
+    private void drawPoints() {
+        this.resources.spriteBatch.draw(this.miniScoreIcon, - this.gameData.width / 2 + 65, this.gameData.height / 2 - 31);
+        BitmapFont whiteFont = this.resources.fonts.get(FontType.NORMAL);
+        whiteFont.draw(this.resources.spriteBatch, "X" + String.format(new Locale("en"), "%.2f", this.gameEngine.getMultiplier()), - this.gameData.width / 2 + 80, this.gameData.height / 2 - 36);
+        whiteFont.draw(this.resources.spriteBatch, String.valueOf(this.gameEngine.getScore()), - this.gameData.width / 2 + 80, this.gameData.height / 2 - 48);
+    }
+
+    private void drawCrystals() {
+        this.resources.spriteBatch.draw(this.miniCrystalIcon, 30, this.gameData.height / 2 - 31);
+        BitmapFont whiteFont = this.resources.fonts.get(FontType.NORMAL);
+        whiteFont.draw(this.resources.spriteBatch, String.valueOf(this.gameEngine.getCrystals()), 46, this.gameData.height / 2 - 36);
     }
 
     public void updateInput(float x, float y) {

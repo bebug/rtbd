@@ -4,22 +4,19 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-import de.florianbuchner.trbd.Rtbd;
 import de.florianbuchner.trbd.core.GameData;
 import de.florianbuchner.trbd.core.GameEngine;
 import de.florianbuchner.trbd.core.Resources;
 import de.florianbuchner.trbd.core.WeaponType;
 import de.florianbuchner.trbd.menu.PauseMenu;
-import de.florianbuchner.trbd.ui.WeaponHud;
+import de.florianbuchner.trbd.ui.GameHud;
 
-public class GameScreen implements Screen, WeaponHud.WeaponHudHandler, InputProcessor {
+public class GameScreen implements Screen, GameHud.WeaponHudHandler, InputProcessor {
 
     private ScreenHandler screenHandler;
-    private WeaponHud weaponHud;
+    private GameHud gameHud;
     private GameEngine gameEngine;
 
     private Vector2 lastTouchPosition = new Vector2();
@@ -35,13 +32,13 @@ public class GameScreen implements Screen, WeaponHud.WeaponHudHandler, InputProc
         this.resources = resources;
         this.gameData = gameData;
         this.gameEngine = new GameEngine(gameData, resources, 25, 25);
-        this.weaponHud = new WeaponHud(gameData, resources, this);
+        this.gameHud = new GameHud(gameData, resources, this, this.gameEngine);
         Gdx.input.setInputProcessor(this);
     }
 
     private void drawGUI() {
         this.resources.spriteBatch.begin();
-        this.weaponHud.drawHud();
+        this.gameHud.drawHud();
         this.resources.spriteBatch.end();
     }
 
@@ -148,7 +145,7 @@ public class GameScreen implements Screen, WeaponHud.WeaponHudHandler, InputProc
         Vector3 projection = this.gameEngine.getResources().camera.unproject(new Vector3(screenX, screenY, 0));
 
         if (!this.touchStarted) {
-            this.weaponHud.updateInput(projection.x, projection.y);
+            this.gameHud.updateInput(projection.x, projection.y);
         }
 
         if (!this.touchStarted) {

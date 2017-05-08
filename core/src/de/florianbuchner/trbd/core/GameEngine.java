@@ -31,6 +31,11 @@ public class GameEngine implements EnemySpawner, KillHandler, DamageHandler {
     private ComponentMapper<HealthComponent> healthComponentComponentMapper;
     private ComponentMapper<MotionComponent> motionComponentComponentMapper;
 
+    // Ingame data
+    long score = 0L;
+    float multiplier = 1F;
+    float multiplierTimer = 0F;
+
     private final Random randomizer;
 
     public GameEngine(GameData gameData, Resources resources, int length, int height) {
@@ -366,5 +371,17 @@ public class GameEngine implements EnemySpawner, KillHandler, DamageHandler {
         this.gameData.healthComponent.health -= damage;
         this.entityEngine.addEntity(this.entityFactory.createDamageLabel(new Vector2(this.gameData.towerPosition.position).add(-15f, -15f).add(this.randomizer.nextFloat() * 30f,
                 this.randomizer.nextFloat() * 30f), damage, FontType.WARN, this.entityEngine));
+    }
+
+    public long getScore() {
+        return score;
+    }
+
+    public float getMultiplier() {
+        return multiplier;
+    }
+
+    public long getCrystals() {
+        return this.gameData.crystals;
     }
 }
